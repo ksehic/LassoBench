@@ -9,9 +9,8 @@ LASSOBench is a library for high-dimensional hyperparameter optimization benchma
 From a console or terminal clone the repository and install LASSOBench:
 
 ::
-
     git clone https://github.com/ksehic/LASSOBench.git
-    cd celer/
+    cd LASSOBench/
     pip install -e .
     
 ## Simple synthetic bench code
