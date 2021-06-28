@@ -117,7 +117,7 @@ class Synt_bench():
         if tol_fidelity is None and index_fidelity is not None:
             tol_range = np.geomspace(self.tol_level, 0.2, num=n_fidelity)
             tol_budget = tol_range[index_fidelity]
-        elif tol_fidelity is None and index_fidelity is not None:
+        elif tol_fidelity is not None and index_fidelity is None:
             tol_budget = tol_fidelity
         else:
             raise ValueError("Please select only one; the level of tolerance or fidelity index.")
@@ -398,16 +398,13 @@ class Realworld_bench():
         self.log_alpha_min = np.log(self.alpha_min)
         self.log_alpha_max = np.log(self.alpha_max)
 
-    def scale_domain(self, input_config):
-        # Scaling the domain for [-1, 1]
-        input_config_copy = np.copy(input_config)
-        old_min = -1
-        old_max = 1
-        scale_input = ((input_config_copy - old_min) / (old_max - old_min)) * (
-            self.log_alpha_max - self.log_alpha_min)
-        scale_input = scale_input + self.log_alpha_min
-
-        return scale_input
+    def scale_domain(self, x):
+        # Scaling the domain
+        x_copy = np.copy(x)
+        x_copy = x_copy * (
+                self.log_alpha_max - self.log_alpha_min) / 2 + (
+                    self.log_alpha_max + self.log_alpha_min) / 2
+        return x_copy
 
     def evaluate(self, input_config):
         scaled_x = self.scale_domain(input_config)
@@ -429,7 +426,7 @@ class Realworld_bench():
         if tol_fidelity is None and index_fidelity is not None:
             tol_range = np.geomspace(self.tol_level, 0.2, num=n_fidelity)
             tol_budget = tol_range[index_fidelity]
-        elif tol_fidelity is None and index_fidelity is not None:
+        elif tol_fidelity is not None and index_fidelity is None:
             tol_budget = tol_fidelity
         else:
             raise ValueError("Please select only one; the level of tolerance or fidelity index.")
@@ -452,20 +449,12 @@ class Realworld_bench():
         estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=True)
         estimator.weights = np.exp(scaled_x)
         estimator.fit(self.X_train, self.y_train)
+        reg_coef = estimator.coef_
         mspe = mean_squared_error(estimator.predict(self.X_test), self.y_test)
-
-        return mspe
-
-    def scale_domain_hesbo(self, x):
-        # Scaling the domain for [0, 1]
-        x_copy = np.copy(x)
-        x_copy = x_copy * (
-                self.log_alpha_max - self.log_alpha_min) / 2 + (
-                    self.log_alpha_max + self.log_alpha_min) / 2
-        return x_copy
+        return mspe, reg_coef
 
     def evaluate_hesbo(self, x):
-        scaled_x = self.scale_domain_hesbo(x)
+        scaled_x = self.scale_domain(x)
         j = 0
         if len(scaled_x.shape) != 1:
             obj_value = np.empty((scaled_x.shape[0], ))

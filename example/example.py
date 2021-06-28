@@ -82,7 +82,7 @@ reg_coef = np.empty((N, d))
 
 for i in tqdm(range(N), ascii=True,
               desc='New config'):
-    # loss[i] = synt_bench_w.evaluate(random_config[i, :])
+    loss[i] = synt_bench_w.evaluate(random_config[i, :])
     mspe[i], fscore[i], reg_coef[i, :] = synt_bench_w.test(random_config[i, :])
 
 # END
