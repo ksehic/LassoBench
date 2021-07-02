@@ -17,7 +17,7 @@ import LASSOBench
 d = 1280
 
 # prepare benchmark
-synt_bench = LASSOBench.Synt_bench()
+synt_bench = LASSOBench.Synt_bench(n_features=d)
 
 # generate random config within [-1, 1]
 N = 1000
