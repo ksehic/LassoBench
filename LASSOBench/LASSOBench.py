@@ -53,11 +53,14 @@ class Synt_bench():
             eps_support: the support threshold
             seed: the seed number
         Return:
-            evaluate: val_loss (the cross-validation loss for evaluate)
-            test: mspe_div (the mean-squared prediction error divided by the oracle error)
+            .evaluate: val_loss (the cross-validation loss for evaluate)
+            .test: mspe_div (the mean-squared prediction error divided by the oracle error)
                   fscore (the F-measure for support recovery)
-            fidelity_evaluate: val_loss for each fidelity (use predefined fidelitis or use tol level to generate a fidelity)
-            run_hesbo: loss, mspe, fscore and elapsed for HesBO (high-dimensional BO algorithm)
+                  reg_coef (regression coefficients for input_config)
+            .fidelity_evaluate: val_loss for each fidelity (use predefined fidelitis or use tol level to generate a fidelity)
+            .run_hesbo: loss, mspe, fscore and elapsed for HesBO (high-dimensional BO algorithm)
+            .run_LASSOCV: loss, mspe and elapsed for LassoCV
+            .run_sparseho: loss, mspe, configuration steps, reg_coef and elapsed for Sparse-HO
         """
 
         self.tol_level = tol_level
@@ -357,10 +360,13 @@ class Realworld_bench():
             test_size: the percentage of test data
             seed: the seed number
         Return:
-            evaluate: val_loss (the cross-validation loss for evaluate)
-            test: mspe (the mean-squared prediction error)
-            fidelity_evaluate: val_loss for each fidelity (use predefined fidelitis or use tol level to generate a fidelity)
-            run_hesbo: loss, mspe and elapsed for HesBO (high-dimensional BO algorithm)
+            .evaluate: val_loss (the cross-validation loss for evaluate)
+            .test: mspe (the mean-squared prediction error)
+                 reg_coef (regression coefficients for input_config)
+            .fidelity_evaluate: val_loss for each fidelity (use predefined fidelitis or use tol level to generate a fidelity)
+            .run_hesbo: loss, mspe and elapsed for HesBO (high-dimensional BO algorithm)
+            .run_LASSOCV: loss, mspe and elapsed for LassoCV
+            .run_sparseho: loss, mspe, configuration steps, reg_coef and elapsed for Sparse-HO
         """
 
         self.tol_level = tol_level
@@ -619,4 +625,4 @@ class Realworld_bench():
             mspe[i] = mean_squared_error(estimator.predict(self.X_test), self.y_test)
             reg_coef[i, :] = estimator.coef_
 
-        return monitor.objs, mspe/self.mspe_oracle, config_all, reg_coef, monitor.times
+        return monitor.objs, mspe, config_all, reg_coef, monitor.times
