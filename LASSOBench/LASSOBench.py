@@ -24,23 +24,19 @@ from sklearn.metrics import f1_score
 
 from libsvmdata import fetch_libsvm
 
-from joblib import Parallel, delayed
-import multiprocessing
-
-from LASSOBench.hesbo_lib import RunMain
 import timeit
 
 
 class Synt_bench():
-    def __init__(self, n_features=1280, n_samples=640,
-                 snr_level=1, corr_level=0.6, n_nonzeros=10,
-                 w_true=None, n_splits=5, test_size=0.15,
-                 tol_level=1e-4, eps_support=1e-6, seed=42):
+    def __init__(self, pick_bench=None, mf_opt=None, n_features=1280, n_samples=640,
+                 snr_level=1, corr_level=0.6, n_nonzeros=10, tol_level=1e-4,
+                 w_true=None, n_splits=5, test_size=0.15, seed=42):
         """
         Synthetic Benchmark that is used to test a HPO algorithm
         on different conditions. It is based on the cross-validation critetion.
         Args:
-            input_config: numpy array sampled within [-1, 1] with d number of elements
+            pick_bench: select a predefined benchmark
+            mf_opt: select the multi-fidelity framework
             n_features: the size of search space d>0 (i.e., the number of features)
             n_samples: the number of samples in a dataset
             snr_level: the level of noise with SNR=1 being very noisy and SNR=10 is almost noiseless.
@@ -50,10 +46,11 @@ class Synt_bench():
             w_true: the predefined reg coef betas numpy array with elemenets equal to n_features
             n_splits: the number of data splits for cross-validation
             test_size: the percentage of test data
-            eps_support: the support threshold
             seed: the seed number
         Return:
-            .evaluate: val_loss (the cross-validation loss for evaluate)
+            .evaluate:
+                Arg: input_config - numpy array sampled within [-1, 1] with d number of elements
+                Return: val_loss (the cross-validation loss for evaluate)
             .test: mspe_div (the mean-squared prediction error divided by the oracle error)
                   fscore (the F-measure for support recovery)
                   reg_coef (regression coefficients for input_config)
@@ -62,6 +59,50 @@ class Synt_bench():
             .run_LASSOCV: loss, mspe and elapsed for LassoCV
             .run_sparseho: loss, mspe, configuration steps, reg_coef and elapsed for Sparse-HO
         """
+
+        if pick_bench is not None:
+            if pick_bench == 'synt_low_eff_bench':
+                n_features = 256
+                n_samples = 128
+                snr_level = 10
+                corr_level = 0.6
+                n_nonzeros = 8
+            elif pick_bench == 'synt_high_eff_bench':
+                n_features = 256
+                n_samples = 128
+                snr_level = 10
+                corr_level = 0.6
+                n_nonzeros = 20
+            elif pick_bench == 'synt_high_noise_bench':
+                n_features = 256
+                n_samples = 128
+                snr_level = 3
+                corr_level = 0.6
+                n_nonzeros = 8
+            elif pick_bench == 'synt_high_corr_bench':
+                n_features = 256
+                n_samples = 128
+                snr_level = 10
+                corr_level = 0.9
+                n_nonzeros = 8
+            elif pick_bench == 'synt_hard_bench':
+                n_features = 1280
+                n_samples = 640
+                snr_level = 1
+                corr_level = 0.6
+                n_nonzeros = 10
+            else:
+                raise ValueError(
+                    "Please select one of the predefined benchmarks or creat your own.")
+
+        if mf_opt is not None:
+            if mf_opt == 'multi_continuous_bench':
+                self.mf = 0
+            elif mf_opt == 'multi_source_bench':
+                self.mf = 1
+            else:
+                raise ValueError(
+                    "Please select one of two mf options multi_continuous_bench or multi_source_bench.")
 
         self.tol_level = tol_level
         self.n_features = n_features
@@ -86,7 +127,7 @@ class Synt_bench():
         self.log_alpha_min = np.log(self.alpha_min)
         self.log_alpha_max = np.log(self.alpha_max)
 
-        self.eps_support = eps_support
+        self.eps_support = 1e-6
 
         self.coef_true_support = np.abs(self.w_true) > self.eps_support
         self.mspe_oracle = mean_squared_error(
@@ -103,7 +144,7 @@ class Synt_bench():
     def evaluate(self, input_config):
         scaled_x = self.scale_domain(input_config)
 
-        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=True)
+        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
         model = WeightedLasso(estimator=estimator)
         monitor = Monitor()
         sub_criterion = HeldOutMSE(None, None)
@@ -114,20 +155,20 @@ class Synt_bench():
 
         return val_loss
 
-    def fidelity_evaluate(self, input_config, index_fidelity=None,
-                          n_fidelity=5, tol_fidelity=None):
+    def fidelity_evaluate(self, input_config, index_fidelity=None):
 
-        if tol_fidelity is None and index_fidelity is not None:
-            tol_range = np.geomspace(self.tol_level, 0.2, num=n_fidelity)
+        if self.mf == 1:
+            tol_range = np.geomspace(self.tol_level, 0.2, num=5)
             tol_budget = tol_range[index_fidelity]
-        elif tol_fidelity is not None and index_fidelity is None:
-            tol_budget = tol_fidelity
         else:
-            raise ValueError("Please select only one; the level of tolerance or fidelity index.")
+            min_tol = -np.log(0.2)
+            max_tol = -np.log(self.tol_level)
+            tol_res = min_tol + index_fidelity*(max_tol - min_tol)
+            tol_budget = np.exp(-tol_res)
 
         scaled_x = self.scale_domain(input_config)
 
-        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=True)
+        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
         model = WeightedLasso(estimator=estimator)
         monitor = Monitor()
         sub_criterion = HeldOutMSE(None, None)
@@ -150,124 +191,6 @@ class Synt_bench():
         mspe_div = mspe/self.mspe_oracle
 
         return mspe_div, fscore, reg_coef
-
-    def evaluate_hesbo(self, x):
-        scaled_x = self.scale_domain(x)
-        j = 0
-        if len(scaled_x.shape) != 1:
-            obj_value = np.empty((scaled_x.shape[0], ))
-            config_all = np.empty((scaled_x.shape[0], self.n_features))
-            time_stop = np.empty((scaled_x.shape[0], ))
-        for i in scaled_x:
-            config = np.empty((self.n_features,))
-            for z in range(self.n_features):
-                config[z] = i[z]
-
-            estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=True)
-            model = WeightedLasso(estimator=estimator)
-            monitor = Monitor()
-            sub_criterion = HeldOutMSE(None, None)
-            criterion = CrossVal(sub_criterion, cv=self.kf)
-
-            if len(scaled_x.shape) == 1:
-                obj_value = criterion.get_val(model, self.X_train, self.y_train,
-                                              log_alpha=config,
-                                              monitor=monitor, tol=self.tol_level)
-                obj_value = np.array([obj_value])
-                obj_value = obj_value.reshape(1, 1)
-                config_all = config
-                time_stop = timeit.default_timer()
-            else:
-                obj_value[j] = criterion.get_val(model, self.X_train, self.y_train,
-                                log_alpha=config,
-                                monitor=monitor, tol=self.tol_level)
-                time_stop[j] = timeit.default_timer()
-                config_all[j, :] = config
-                j = j + 1
-
-        if len(scaled_x.shape) != 1:
-            obj_value = obj_value.reshape(scaled_x.shape[0], 1)
-
-        return -obj_value, config_all, time_stop
-
-    def run_hesbo(self, eff_dim, n_doe, n_total, ARD=True, n_repeat=0, n_seed=42, n_jobs=1):
-
-        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=True)
-        n_total = n_total + n_doe
-
-        if n_jobs > 1:
-
-            def run_parallel_hesbo(low_dim, high_dim, initial_n, total_itr, test_func, ARD):
-                def parallel_hesbo(n_seed):
-                    _, elapsed0, _, loss0, _, config0 = RunMain(low_dim=low_dim, high_dim=high_dim, initial_n=initial_n,
-                                                                total_itr=total_itr, test_func=test_func, ARD=ARD,
-                                                                n_seed=n_seed)
-                    return elapsed0, loss0, config0
-                return parallel_hesbo
-
-            hesbo_objective = run_parallel_hesbo(low_dim=eff_dim, high_dim=self.n_features, initial_n=n_doe,
-                                                 total_itr=n_total - n_doe, test_func=self.evaluate_hesbo, ARD=ARD)
-            random_seeds = np.random.randint(200000000, size=n_repeat)
-            # num_cores = multiprocessing.cpu_count()
-            par_res = Parallel(n_jobs=n_jobs)(
-                delayed(hesbo_objective)(n_seed) for n_seed in random_seeds)
-
-            loss = np.empty((n_total, n_repeat))
-            elapsed = np.empty((n_total, n_repeat))
-            mspe_hesbo = np.empty((n_total, n_repeat))
-            fscore = np.empty((n_total, n_repeat))
-            config_all = np.empty((n_total, self.n_features, n_repeat))
-
-            for i in range(n_repeat):
-                loss[:, i] = np.squeeze(par_res[i][1])
-                elapsed[:, i] = np.squeeze(par_res[i][0])
-                config_par = par_res[i][2]
-                for j in range(n_total):
-                    estimator.weights = np.exp(config_par[j, :])
-                    config_all[j, :, i] = np.exp(config_par[j, :])
-                    estimator.fit(self.X_train, self.y_train)
-                    mspe_hesbo[j, i] = mean_squared_error(estimator.predict(self.X_test), self.y_test)
-                    coef_hesbo_support = np.abs(estimator.coef_) > self.eps_support
-                    fscore[j, i] = f1_score(self.coef_true_support, coef_hesbo_support)
-            mspe_hesbo = mspe_hesbo / self.mspe_oracle
-        else:
-            if n_repeat > 1:
-                random_seeds = np.random.randint(200000000, size=n_repeat)
-                loss = np.empty((n_total, n_repeat))
-                elapsed = np.empty((n_total, n_repeat))
-                mspe_hesbo = np.empty((n_total, n_repeat))
-                fscore = np.empty((n_total, n_repeat))
-                config_all = np.empty((n_total, self.n_features, n_repeat))
-
-                for i in range(n_repeat):
-                    _, elapsed0, _, loss0, _, config0 = RunMain(low_dim=eff_dim, high_dim=self.n_features, initial_n=n_doe,
-                                                                total_itr=n_total - n_doe, test_func=self.evaluate_hesbo, ARD=ARD,
-                                                                n_seed=random_seeds[i])
-                    loss[:, i] = loss0[:, 0]
-                    elapsed[:, i] = elapsed0[0, :]
-                    for j in range(n_total):
-                        estimator.weights = np.exp(config0[j, :])
-                        config_all[j, :, i] = np.exp(config0[j, :])
-                        estimator.fit(self.X_train, self.y_train)
-                        mspe_hesbo[j, i] = mean_squared_error(estimator.predict(self.X_test), self.y_test)
-                        coef_hesbo_support = np.abs(estimator.coef_) > self.eps_support
-                        fscore[j, i] = f1_score(self.coef_true_support, coef_hesbo_support)
-                mspe_hesbo = mspe_hesbo / self.mspe_oracle
-            else:
-                _, elapsed, _, loss, _, config = RunMain(low_dim=eff_dim, high_dim=self.n_features, initial_n=n_doe, total_itr=n_total - n_doe, test_func=self.evaluate_hesbo, ARD=ARD, n_seed=n_seed)
-                mspe_hesbo = np.empty((n_total,))
-                fscore = np.empty((n_total,))
-                config_all = np.empty((n_total, self.n_features))
-                for i in range(n_total):
-                    estimator.weights = np.exp(config[i, :])
-                    config_all[i, :] = np.exp(config[i, :])
-                    estimator.fit(self.X_train, self.y_train)
-                    mspe_hesbo[i] = mean_squared_error(estimator.predict(self.X_test), self.y_test)
-                    coef_hesbo_support = np.abs(estimator.coef_) > self.eps_support
-                    fscore[i] = f1_score(self.coef_true_support, coef_hesbo_support)
-                mspe_hesbo = mspe_hesbo / self.mspe_oracle
-
-        return -loss, mspe_hesbo, fscore, config_all, elapsed
 
     def run_LASSOCV(self, n_alphas=100):
 
@@ -348,16 +271,14 @@ class Synt_bench():
 
 
 class Realworld_bench():
-    def __init__(self, data_pick=None, n_splits=5, test_size=0.15,
-                 tol_level=1e-4, seed=42):
+    def __init__(self, pick_data=None, mf_opt=None, tol_level=1e-4, n_splits=5, test_size=0.15, seed=42):
         """
         Real world Benchmark that is used to test a HPO algorithm
         for datasets found in practice. It is based on the cross-validation critetion.
         Args:
             input_config: numpy array sampled within [-1, 1] with d number of elements
-            data_pick: select real world dataset
+            pick_data: select real world dataset
             n_splits: the number of data splits for cross-validation
-            test_size: the percentage of test data
             seed: the seed number
         Return:
             .evaluate: val_loss (the cross-validation loss for evaluate)
@@ -371,23 +292,32 @@ class Realworld_bench():
 
         self.tol_level = tol_level
 
-        if data_pick == 'diabetes':
+        if pick_data == 'diabetes':
             X, y = fetch_libsvm('diabetes_scale')
             alpha_scale = 1e5
-        elif data_pick == 'breast-cancer':
+        elif pick_data == 'breast-cancer':
             X, y = fetch_libsvm('breast-cancer_scale')
             alpha_scale = 1e5
-        elif data_pick == 'leukemia':
-            X, y = fetch_libsvm(data_pick)
+        elif pick_data == 'leukemia':
+            X, y = fetch_libsvm(pick_data)
             alpha_scale = 1e5
-        elif data_pick == 'rcv1':
+        elif pick_data == 'rcv1':
             X, y = fetch_libsvm('rcv1.binary')
             alpha_scale = 1e3
-        elif data_pick == 'news20':
+        elif pick_data == 'news20':
             X, y = fetch_libsvm('news20.binary')
             alpha_scale = 1e5
         else:
-            raise ValueError("Unsupported dataset %s" % data_pick)
+            raise ValueError("Unsupported dataset %s" % pick_data)
+
+        if mf_opt is not None:
+            if mf_opt == 'multi_continuous_bench':
+                self.mf = 0
+            elif mf_opt == 'multi_source_bench':
+                self.mf = 1
+            else:
+                raise ValueError(
+                    "Please select one of two mf options multi_continuous_bench or multi_source_bench.")
 
         self.n_features = X.shape[1]
 
@@ -415,7 +345,7 @@ class Realworld_bench():
     def evaluate(self, input_config):
         scaled_x = self.scale_domain(input_config)
 
-        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=True)
+        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
         model = WeightedLasso(estimator=estimator)
         monitor = Monitor()
         sub_criterion = HeldOutMSE(None, None)
@@ -429,17 +359,18 @@ class Realworld_bench():
     def fidelity_evaluate(self, input_config, index_fidelity=None,
                           n_fidelity=5, tol_fidelity=None):
 
-        if tol_fidelity is None and index_fidelity is not None:
-            tol_range = np.geomspace(self.tol_level, 0.2, num=n_fidelity)
+        if self.mf == 1:
+            tol_range = np.geomspace(self.tol_level, 0.2, num=5)
             tol_budget = tol_range[index_fidelity]
-        elif tol_fidelity is not None and index_fidelity is None:
-            tol_budget = tol_fidelity
         else:
-            raise ValueError("Please select only one; the level of tolerance or fidelity index.")
+            min_tol = -np.log(0.2)
+            max_tol = -np.log(self.tol_level)
+            tol_res = min_tol + index_fidelity*(max_tol - min_tol)
+            tol_budget = np.exp(-tol_res)
 
         scaled_x = self.scale_domain(input_config)
 
-        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=True)
+        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
         model = WeightedLasso(estimator=estimator)
         monitor = Monitor()
         sub_criterion = HeldOutMSE(None, None)
@@ -449,114 +380,6 @@ class Realworld_bench():
                                      monitor=monitor, tol=tol_budget)
 
         return val_loss
-
-    def test(self, input_config):
-        scaled_x = self.scale_domain(input_config)
-        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=True)
-        estimator.weights = np.exp(scaled_x)
-        estimator.fit(self.X_train, self.y_train)
-        reg_coef = estimator.coef_
-        mspe = mean_squared_error(estimator.predict(self.X_test), self.y_test)
-        return mspe, reg_coef
-
-    def evaluate_hesbo(self, x):
-        scaled_x = self.scale_domain(x)
-        j = 0
-        if len(scaled_x.shape) != 1:
-            obj_value = np.empty((scaled_x.shape[0], ))
-            config_all = np.empty((scaled_x.shape[0], self.n_features))
-            time_stop = np.empty((scaled_x.shape[0], ))
-        for i in scaled_x:
-            config = np.empty((self.n_features,))
-            for z in range(self.n_features):
-                config[z] = i[z]
-
-            estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=True)
-            model = WeightedLasso(estimator=estimator)
-            monitor = Monitor()
-            sub_criterion = HeldOutMSE(None, None)
-            criterion = CrossVal(sub_criterion, cv=self.kf)
-
-            if len(scaled_x.shape) == 1:
-                obj_value = criterion.get_val(model, self.X_train, self.y_train,
-                                              log_alpha=config,
-                                              monitor=monitor, tol=self.tol_level)
-                obj_value = np.array([obj_value])
-                obj_value = obj_value.reshape(1, 1)
-                config_all = config
-                time_stop = timeit.default_timer()
-            else:
-                obj_value[j] = criterion.get_val(model, self.X_train, self.y_train,
-                                log_alpha=config,
-                                monitor=monitor, tol=self.tol_level)
-                time_stop[j] = timeit.default_timer()
-                config_all[j, :] = config
-                j = j + 1
-
-        if len(scaled_x.shape) != 1:
-            obj_value = obj_value.reshape(scaled_x.shape[0], 1)
-
-        return -obj_value, config_all, time_stop
-
-    def run_hesbo(self, eff_dim, n_doe, n_total, ARD=True, n_repeat=0, n_seed=42, n_jobs=1):
-
-        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=True)
-
-        if n_jobs > 1:
-
-            def run_parallel_hesbo(low_dim, high_dim, initial_n, total_itr, test_func, ARD):
-                def parallel_hesbo(n_seed):
-                    _, elapsed0, _, loss0, _, config0 = RunMain(low_dim=low_dim, high_dim=high_dim, initial_n=initial_n,
-                                                                total_itr=total_itr, test_func=test_func, ARD=ARD,
-                                                                n_seed=n_seed)
-                    return elapsed0, loss0, config0
-                return parallel_hesbo
-
-            hesbo_objective = run_parallel_hesbo(low_dim=eff_dim, high_dim=self.n_features, initial_n=n_doe,
-                                                 total_itr=n_total - n_doe, test_func=self.evaluate_hesbo, ARD=ARD)
-            random_seeds = np.random.randint(200000000, size=n_repeat)
-            # num_cores = multiprocessing.cpu_count()
-            par_res = Parallel(n_jobs=n_jobs)(
-                delayed(hesbo_objective)(n_seed) for n_seed in random_seeds)
-
-            loss = np.empty((n_total, n_repeat))
-            elapsed = np.empty((n_total, n_repeat))
-            mspe_hesbo = np.empty((n_total, n_repeat))
-
-            for i in range(n_repeat):
-                loss[:, i] = np.squeeze(par_res[i][1])
-                elapsed[:, i] = np.squeeze(par_res[i][0])
-                config_par = par_res[i][2]
-                for j in range(n_total):
-                    estimator.weights = np.exp(config_par[j, :])
-                    estimator.fit(self.X_train, self.y_train)
-                    mspe_hesbo[j, i] = mean_squared_error(estimator.predict(self.X_test), self.y_test)
-        else:
-            if n_repeat > 1:
-                random_seeds = np.random.randint(200000000, size=n_repeat)
-                loss = np.empty((n_total, n_repeat))
-                elapsed = np.empty((n_total, n_repeat))
-                mspe_hesbo = np.empty((n_total, n_repeat))
-
-                for i in range(n_repeat):
-                    _, elapsed0, _, loss0, _, config0 = RunMain(low_dim=eff_dim, high_dim=self.n_features, initial_n=n_doe,
-                                                                total_itr=n_total - n_doe, test_func=self.evaluate_hesbo, ARD=ARD,
-                                                                n_seed=random_seeds[i])
-                    loss[:, i] = loss0[:, 0]
-                    elapsed[:, i] = elapsed0[0, :]
-                    for j in range(n_total):
-                        estimator.weights = np.exp(config0[j, :])
-                        estimator.fit(self.X_train, self.y_train)
-                        mspe_hesbo[j, i] = mean_squared_error(estimator.predict(self.X_test), self.y_test)
-            else:
-                _, elapsed, _, loss, _, config = RunMain(low_dim=eff_dim, high_dim=self.n_features, initial_n=n_doe, total_itr=n_total - n_doe, test_func=self.evaluate_hesbo, ARD=ARD, n_seed=n_seed)
-                mspe_hesbo = np.empty((n_total,))
-                for i in range(n_total):
-                    estimator.weights = np.exp(config[i, :])
-                    estimator.fit(self.X_train, self.y_train)
-                    mspe_hesbo[i] = mean_squared_error(estimator.predict(self.X_test), self.y_test)
-
-        return loss, mspe_hesbo, elapsed
 
     def run_LASSOCV(self, n_alphas=100):
 
