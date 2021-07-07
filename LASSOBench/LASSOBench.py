@@ -152,6 +152,8 @@ class Synt_bench():
                 raise ValueError(
                     "Please select one of the predefined benchmarks or creat your own.")
 
+        self.mf = 2
+
         if mf_opt is not None:
             if mf_opt == 'multi_continuous_bench':
                 self.mf = 0
@@ -472,6 +474,8 @@ class Realworld_bench():
             alpha_scale = 1e5
         else:
             raise ValueError("Unsupported dataset %s" % pick_data)
+
+        self.mf = 2
 
         if mf_opt is not None:
             if mf_opt == 'multi_continuous_bench':
