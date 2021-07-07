@@ -31,7 +31,7 @@ fscore = np.empty((N,))  # between 0 and 1. 1 is the best
 for i in tqdm(range(N), ascii=True,
               desc='New config'):
     loss[i] = synt_bench.evaluate(random_config[i, :])
-    mspe[i], fscore[i], _ = synt_bench.test(random_config[i, :])
+    mspe[i], fscore[i] = synt_bench.test(random_config[i, :])
 
 # run lassocv
 loss_lcv, mspe_lcv, fscore_lcv, config_lcv, time_lcv = synt_bench.run_LASSOCV()

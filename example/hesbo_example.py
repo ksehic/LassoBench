@@ -6,16 +6,14 @@ High-Dimensional Hyperparameter
 Optimization Benchmark
 Contact: kenan.sehic@cs.lth.se
 
-Example: Random search on synthetic benchmark
+Example: HesBO on synthetic benchmark
 =================================================
 """
 import numpy as np
-from tqdm import tqdm
 import LASSOBench
 from hesbo_lib import RunMain as hesbo_run
 
 from joblib import Parallel, delayed
-import multiprocessing
 import timeit
 
 import matplotlib.pyplot as plt
@@ -89,7 +87,7 @@ def run_hesbo(eff_dim, n_doe, n_total, ARD=True, n_repeat=0, n_seed=42, n_jobs=1
             elapsed[:, i] = np.squeeze(par_res[i][0])
             config_par = par_res[i][2]
             for j in range(n_total):
-                mspe_hesbo[j, i], fscore[j, i], config_all[j, :, i] = synt_bench.test(input_config=config_par[j, :])
+                mspe_hesbo[j, i], fscore[j, i] = synt_bench.test(input_config=config_par[j, :])
     else:
         if n_repeat > 1:
             random_seeds = np.random.randint(200000000, size=n_repeat)
@@ -106,7 +104,7 @@ def run_hesbo(eff_dim, n_doe, n_total, ARD=True, n_repeat=0, n_seed=42, n_jobs=1
                 loss[:, i] = loss0[:, 0]
                 elapsed[:, i] = elapsed0[0, :]
                 for j in range(n_total):
-                    mspe_hesbo[j, i], fscore[j, i], config_all[j, :, i] = synt_bench.test(input_config=config0[j, :])
+                    mspe_hesbo[j, i], fscore[j, i] = synt_bench.test(input_config=config0[j, :])
         else:
             _, elapsed, _, loss, _, config = hesbo_run(
                 low_dim=eff_dim, high_dim=d, initial_n=n_doe,
@@ -116,9 +114,9 @@ def run_hesbo(eff_dim, n_doe, n_total, ARD=True, n_repeat=0, n_seed=42, n_jobs=1
             fscore = np.empty((n_total,))
             config_all = np.empty((n_total, d))
             for i in range(n_total):
-                mspe_hesbo[j, i], fscore[j, i], config_all[j, :, i] = synt_bench.test(input_config=config[i, :])
+                mspe_hesbo[j, i], fscore[j, i] = synt_bench.test(input_config=config[i, :])
 
-    return -loss, mspe_hesbo, fscore, config_all, elapsed
+    return -loss, mspe_hesbo, fscore, elapsed
 
 
 # run Hesbo parallel on synt
@@ -128,7 +126,7 @@ eff_dim = 2
 n_repeat = 5
 n_jobs = 5
 
-loss_hesbo, mspe_hesbo, fscore_hesbo, reg_coef_hesbo, time_hesbo = run_hesbo(
+loss_hesbo, mspe_hesbo, fscore_hesbo, time_hesbo = run_hesbo(
     eff_dim=eff_dim, n_doe=initial_desing, n_total=total_steps, ARD=True,
     n_repeat=n_repeat, n_seed=42, n_jobs=n_jobs)
 
