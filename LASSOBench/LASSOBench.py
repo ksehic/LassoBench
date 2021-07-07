@@ -28,36 +28,93 @@ import timeit
 
 
 class Synt_bench():
+    """
+    Creating a synthetic benchmark for a HPO algorithm.
+
+    ...
+
+    Attributes
+    ----------
+    pick_bench : str
+        name of a predefined bench such as
+        synt_low_eff_bench, synt_high_eff_bench, synt_high_noise_bench,
+        synt_high_corr_bench and synt_hard_bench
+    mf_opt : str, optional
+        name of a multi-fidelity framework
+        multi_continuous_bench or multi_source_bench
+    n_features : int, optional
+        number of features in design matrix i.e. the dimension of search space
+    n_samples : int, optional
+        number of samples in design matrix
+    snr_level : int, optional
+        level of noise, 1 very noisy 10 noiseless
+    corr_level : int, optional
+        correlation between features in design matrix
+    n_nonzeros: int, optional
+        number of nonzero elements in true reg coef
+    tol_level: int, optional
+        tolerance level for inner opt part
+    w_true: array, optional
+        custimized true regression coefficients
+    n_splits: int, optional
+        number of splits in CV
+    test_size: int, optional
+        percentage of test data
+    seed: int, optional
+        seed number
+
+    Methods
+    -------
+    evaluate(input_config):
+        Return cross-validation loss for configuration.
+    fidelity_evaluate(input_config, index_fidelity=None):
+        Return cross-validation loss for configuration and fidelity index.
+    test(input_config):
+        Return post-processing metrics MSPE divided by oracle error,
+        Fscore and reg coef for configuration.
+    run_LASSOCV(n_alphas=100):
+        Running baseline LASSOCV and return loss, mspe divided by oracle,
+        fsore, best-found 1D config and time elapsed.
+    run_sparseho(grad_solver='gd', algo_pick='imp_forw', n_steps=10, init_point=None, verbose=False):
+        Running basedline Sparse-HO and return loss, mspe divided by oracle,
+        fscore and time elapsed.
+    """
+
     def __init__(self, pick_bench=None, mf_opt=None, n_features=1280, n_samples=640,
                  snr_level=1, corr_level=0.6, n_nonzeros=10, tol_level=1e-4,
                  w_true=None, n_splits=5, test_size=0.15, seed=42):
         """
-        Synthetic Benchmark that is used to test a HPO algorithm
-        on different conditions. It is based on the cross-validation critetion.
-        Args:
-            pick_bench: select a predefined benchmark
-            mf_opt: select the multi-fidelity framework
-            n_features: the size of search space d>0 (i.e., the number of features)
-            n_samples: the number of samples in a dataset
-            snr_level: the level of noise with SNR=1 being very noisy and SNR=10 is almost noiseless.
-            corr_level: the level of correlation withint features
-            n_nonzeros: the number of nonzero elements in true reg coef betas
-                        that can reduce or increase the sparsity of the solution
-            w_true: the predefined reg coef betas numpy array with elemenets equal to n_features
-            n_splits: the number of data splits for cross-validation
-            test_size: the percentage of test data
-            seed: the seed number
-        Return:
-            .evaluate:
-                Arg: input_config - numpy array sampled within [-1, 1] with d number of elements
-                Return: val_loss (the cross-validation loss for evaluate)
-            .test: mspe_div (the mean-squared prediction error divided by the oracle error)
-                  fscore (the F-measure for support recovery)
-                  reg_coef (regression coefficients for input_config)
-            .fidelity_evaluate: val_loss for each fidelity (use predefined fidelitis or use tol level to generate a fidelity)
-            .run_hesbo: loss, mspe, fscore and elapsed for HesBO (high-dimensional BO algorithm)
-            .run_LASSOCV: loss, mspe and elapsed for LassoCV
-            .run_sparseho: loss, mspe, configuration steps, reg_coef and elapsed for Sparse-HO
+        Constructs all the necessary attributes for synt bench.
+
+        Parameters
+        ----------
+            pick_bench : str
+                name of a predefined bench such as
+                synt_low_eff_bench, synt_high_eff_bench, synt_high_noise_bench,
+                synt_high_corr_bench and synt_hard_bench
+            mf_opt : str, optional
+                name of a multi-fidelity framework
+                multi_continuous_bench or multi_source_bench
+            n_features : int, optional
+                number of features in design matrix i.e. the dimension of search space
+            n_samples : int, optional
+                number of samples in design matrix
+            snr_level : int, optional
+                level of noise, 1 very noisy 10 noiseless
+            corr_level : int, optional
+                correlation between features in design matrix
+            n_nonzeros: int, optional
+                number of nonzero elements in true reg coef
+            tol_level: int, optional
+                tolerance level for inner opt part
+            w_true: array, optional
+                custimized true regression coefficients
+            n_splits: int, optional
+                number of splits in CV
+            test_size: int, optional
+                percentage of test data
+            seed: int, optional
+                seed number
         """
 
         if pick_bench is not None:
@@ -142,6 +199,17 @@ class Synt_bench():
         return x_copy
 
     def evaluate(self, input_config):
+        """
+        Evaluate configuration for synt bench
+
+        Parameters
+        ----------
+        input_config : array size of n_features
+
+        Returns
+        -------
+        Cross-validation Loss
+        """
         scaled_x = self.scale_domain(input_config)
 
         estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
@@ -156,7 +224,20 @@ class Synt_bench():
         return val_loss
 
     def fidelity_evaluate(self, input_config, index_fidelity=None):
+        """
+        Return cross-validation loss for selected fidelity.
 
+        Parameters
+        ----------
+        input_config : array size of n_features
+        index_fidelity : int, optional
+            If mf_opt is selected, then selecting which fidelity to evaluate. (default is None)
+            For multi_source_bench, index_fidelity is a dicreate par between 0 and 5.
+
+        Returns
+        -------
+        Cross-validation Loss
+        """
         if self.mf == 1:
             tol_range = np.geomspace(self.tol_level, 0.2, num=5)
             tol_budget = tol_range[index_fidelity]
@@ -180,8 +261,19 @@ class Synt_bench():
         return val_loss
 
     def test(self, input_config):
+        """
+        Post-processing metrics MSPE and Fscore
+
+        Parameters
+        ----------
+        input_config : array size of n_features
+
+        Returns
+        -------
+        MSPE divided by oracle and Fscore
+        """
         scaled_x = self.scale_domain(input_config)
-        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=True)
+        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
         estimator.weights = np.exp(scaled_x)
         estimator.fit(self.X_train, self.y_train)
         reg_coef = estimator.coef_
@@ -190,9 +282,21 @@ class Synt_bench():
         mspe = mean_squared_error(estimator.predict(self.X_test), self.y_test)
         mspe_div = mspe/self.mspe_oracle
 
-        return mspe_div, fscore, reg_coef
+        return mspe_div, fscore
 
     def run_LASSOCV(self, n_alphas=100):
+        """
+        Running baseline LASSOCV
+
+        Parameters
+        ----------
+        n_alphas : int, optional
+            The number of grid points in 1D optimization (default is 100)
+
+        Returns
+        -------
+        Cross-validation Loss, MSPE divided by oracle, fscore and time elapsed
+        """
 
         # default number of alphas
         alphas = np.geomspace(self.alpha_max, self.alpha_min, n_alphas)
@@ -216,9 +320,27 @@ class Synt_bench():
         coef_lcv_support = np.abs(model_lcv.coef_) > self.eps_support
         fscore = f1_score(self.coef_true_support, coef_lcv_support)
 
-        return loss_lcv, mspe_lcv/self.mspe_oracle, fscore, alphas[min_lcv[0]], elapsed
+        return loss_lcv, mspe_lcv/self.mspe_oracle, fscore, elapsed
 
-    def run_sparseho(self, grad_solver='gd', algo_pick='imp_forw', n_steps=10, init_point=None, verbose=False):
+    def run_sparseho(self, grad_solver='gd', algo_pick='imp_forw', n_steps=10, init_point=None):
+        """
+        Running baseline Sparse-HO
+
+        Parameters
+        ----------
+        grad_solver : str, optional
+            Selecting which gradient solver to use gradient descent 'gd', 'adam' or 'line' as line search (default is gd)
+        algo_pick   : str, optional
+            Selecting which diff solver to use imp_forw or imp (default is imp_forw)
+        n_steps     : int, optional
+            Number of optimization steps (default is 10)
+        init_point  : array, optional
+            First guess (default is None)
+
+        Returns
+        -------
+        Cross-validation loss, MSPE divided by oracle, fscore and time elapsed
+        """
 
         if init_point is not None:
             init_point_scale = self.scale_domain(init_point)
@@ -237,11 +359,11 @@ class Synt_bench():
         monitor = Monitor()
         if grad_solver == 'gd':
             optimizer = GradientDescent(n_outer=n_steps, tol=self.tol_level,
-                                        verbose=verbose, p_grad_norm=1.9)
+                                        verbose=False, p_grad_norm=1.9)
         elif grad_solver == 'adam':
-            optimizer = Adam(n_outer=n_steps, lr=0.11, verbose=verbose, tol=self.tol_level)
+            optimizer = Adam(n_outer=n_steps, lr=0.11, verbose=False, tol=self.tol_level)
         elif grad_solver == 'line':
-            optimizer = LineSearch(n_outer=n_steps, verbose=verbose, tol=self.tol_level)
+            optimizer = LineSearch(n_outer=n_steps, verbose=False, tol=self.tol_level)
 
         if init_point is None:
             grad_search(
@@ -266,28 +388,66 @@ class Synt_bench():
             coef_sho_support = np.abs(estimator.coef_) > self.eps_support
             fscore[i] = f1_score(self.coef_true_support, coef_sho_support)
 
-        return monitor.objs, mspe/self.mspe_oracle, fscore, config_all, reg_coef, monitor.times
+        return monitor.objs, mspe/self.mspe_oracle, fscore, monitor.times
 
 
 
 class Realworld_bench():
+    """
+    Creating a real-world benchmark for a HPO algorithm.
+
+    ...
+
+    Attributes
+    ----------
+    pick_data : str
+        name of dataset such as
+        diabetes, breast_cancer, leukemia, rcv1, news20
+    mf_opt : str, optional
+        name of a multi-fidelity framework
+        multi_continuous_bench or multi_source_bench
+    tol_level: int, optional
+        tolerance level for inner opt part
+    n_splits: int, optional
+        number of splits in CV
+    test_size: int, optional
+        percentage of test data
+    seed: int, optional
+        seed number
+
+    Methods
+    -------
+    evaluate(input_config):
+        Return cross-validation loss for configuration.
+    fidelity_evaluate(input_config, index_fidelity=None):
+        Return cross-validation loss for configuration and fidelity index.
+    test(input_config):
+        Return post-processing metric MSPE.
+    run_LASSOCV(n_alphas=100):
+        Running baseline LASSOCV and return loss, MSPE and time elapsed.
+    run_sparseho(grad_solver='gd', algo_pick='imp_forw', n_steps=10, init_point=None, verbose=False):
+        Running basedline Sparse-HO and return loss, MSPE and time elapsed.
+    """
     def __init__(self, pick_data=None, mf_opt=None, tol_level=1e-4, n_splits=5, test_size=0.15, seed=42):
         """
-        Real world Benchmark that is used to test a HPO algorithm
-        for datasets found in practice. It is based on the cross-validation critetion.
-        Args:
-            input_config: numpy array sampled within [-1, 1] with d number of elements
-            pick_data: select real world dataset
-            n_splits: the number of data splits for cross-validation
-            seed: the seed number
-        Return:
-            .evaluate: val_loss (the cross-validation loss for evaluate)
-            .test: mspe (the mean-squared prediction error)
-                 reg_coef (regression coefficients for input_config)
-            .fidelity_evaluate: val_loss for each fidelity (use predefined fidelitis or use tol level to generate a fidelity)
-            .run_hesbo: loss, mspe and elapsed for HesBO (high-dimensional BO algorithm)
-            .run_LASSOCV: loss, mspe and elapsed for LassoCV
-            .run_sparseho: loss, mspe, configuration steps, reg_coef and elapsed for Sparse-HO
+        Constructs all the necessary attributes for real-world bench.
+
+        Parameters
+        ----------
+            pick_data : str
+                name of dataset such as
+                diabetes, breast_cancer, leukemia, rcv1, news20
+            mf_opt : str, optional
+                name of a multi-fidelity framework
+                multi_continuous_bench or multi_source_bench
+            tol_level: int, optional
+                tolerance level for inner opt part
+            n_splits: int, optional
+                number of splits in CV
+            test_size: int, optional
+                percentage of test data
+            seed: int, optional
+                seed number
         """
 
         self.tol_level = tol_level
@@ -295,7 +455,7 @@ class Realworld_bench():
         if pick_data == 'diabetes':
             X, y = fetch_libsvm('diabetes_scale')
             alpha_scale = 1e5
-        elif pick_data == 'breast-cancer':
+        elif pick_data == 'breast_cancer':
             X, y = fetch_libsvm('breast-cancer_scale')
             alpha_scale = 1e5
         elif pick_data == 'leukemia':
@@ -343,6 +503,17 @@ class Realworld_bench():
         return x_copy
 
     def evaluate(self, input_config):
+        """
+        Evaluate configuration for synt bench
+
+        Parameters
+        ----------
+        input_config : array size of n_features
+
+        Returns
+        -------
+        Cross-validation Loss
+        """
         scaled_x = self.scale_domain(input_config)
 
         estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
@@ -356,8 +527,21 @@ class Realworld_bench():
 
         return val_loss
 
-    def fidelity_evaluate(self, input_config, index_fidelity=None,
-                          n_fidelity=5, tol_fidelity=None):
+    def fidelity_evaluate(self, input_config, index_fidelity=None):
+        """
+        Return cross-validation loss for selected fidelity.
+
+        Parameters
+        ----------
+        input_config : array size of n_features
+        index_fidelity : int, optional
+            If mf_opt is selected, then selecting which fidelity to evaluate. (default is None)
+            For multi_source_bench, index_fidelity is a dicreate par between 0 and 5.
+
+        Returns
+        -------
+        Cross-validation Loss
+        """
 
         if self.mf == 1:
             tol_range = np.geomspace(self.tol_level, 0.2, num=5)
@@ -381,7 +565,39 @@ class Realworld_bench():
 
         return val_loss
 
+    def test(self, input_config):
+        """
+        Post-processing metrics MSPE and Fscore
+
+        Parameters
+        ----------
+        input_config : array size of n_features
+
+        Returns
+        -------
+        MSPE
+        """
+        scaled_x = self.scale_domain(input_config)
+        estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
+        estimator.weights = np.exp(scaled_x)
+        estimator.fit(self.X_train, self.y_train)
+        mspe = mean_squared_error(estimator.predict(self.X_test), self.y_test)
+
+        return mspe
+
     def run_LASSOCV(self, n_alphas=100):
+        """
+        Running baseline LASSOCV
+
+        Parameters
+        ----------
+        n_alphas : int, optional
+            The number of grid points in 1D optimization (default is 100)
+
+        Returns
+        -------
+        Cross-validation Loss, MSPE divided by oracle and time elapsed
+        """
 
         # default number of alphas
         alphas = np.geomspace(self.alpha_max, self.alpha_min, n_alphas)
@@ -404,7 +620,25 @@ class Realworld_bench():
 
         return loss_lcv, mspe_lcv, elapsed
 
-    def run_sparseho(self, grad_solver='gd', algo_pick='imp_forw', n_steps=10, init_point=None, verbose=False):
+    def run_sparseho(self, grad_solver='gd', algo_pick='imp_forw', n_steps=10, init_point=None):
+        """
+        Running baseline Sparse-HO
+
+        Parameters
+        ----------
+        grad_solver : str, optional
+            Selecting which gradient solver to use gradient descent 'gd', 'adam' or 'line' as line search (default is gd)
+        algo_pick   : str, optional
+            Selecting which diff solver to use imp_forw or imp (default is imp_forw)
+        n_steps     : int, optional
+            Number of optimization steps (default is 10)
+        init_point  : array, optional
+            First guess (default is None)
+
+        Returns
+        -------
+        Cross-validation loss, MSPE divided by oracle and time elapsed
+        """
 
         init_point_scale = self.scale_domain(init_point)
 
@@ -422,11 +656,11 @@ class Realworld_bench():
         monitor = Monitor()
         if grad_solver == 'gd':
             optimizer = GradientDescent(n_outer=n_steps, tol=self.tol_level,
-                                        verbose=verbose, p_grad_norm=1.9)
+                                        verbose=False, p_grad_norm=1.9)
         elif grad_solver == 'adam':
-            optimizer = Adam(n_outer=n_steps, lr=0.11, verbose=verbose, tol=self.tol_level)
+            optimizer = Adam(n_outer=n_steps, lr=0.11, verbose=False, tol=self.tol_level)
         elif grad_solver == 'line':
-            optimizer = LineSearch(n_outer=n_steps, verbose=verbose, tol=self.tol_level)
+            optimizer = LineSearch(n_outer=n_steps, verbose=False, tol=self.tol_level)
 
         if init_point is None:
             grad_search(
@@ -448,4 +682,4 @@ class Realworld_bench():
             mspe[i] = mean_squared_error(estimator.predict(self.X_test), self.y_test)
             reg_coef[i, :] = estimator.coef_
 
-        return monitor.objs, mspe, config_all, reg_coef, monitor.times
+        return monitor.objs, mspe, monitor.times
