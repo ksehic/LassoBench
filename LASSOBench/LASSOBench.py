@@ -241,11 +241,14 @@ class Synt_bench():
         if self.mf == 1:
             tol_range = np.geomspace(self.tol_level, 0.2, num=5)
             tol_budget = tol_range[index_fidelity]
-        else:
+        elif self.mf == 0:
             min_tol = -np.log(0.2)
             max_tol = -np.log(self.tol_level)
             tol_res = min_tol + index_fidelity*(max_tol - min_tol)
             tol_budget = np.exp(-tol_res)
+        else:
+            raise ValueError(
+                "Please select one of two mf options multi_continuous_bench or multi_source_bench.")
 
         scaled_x = self.scale_domain(input_config)
 
@@ -546,11 +549,14 @@ class Realworld_bench():
         if self.mf == 1:
             tol_range = np.geomspace(self.tol_level, 0.2, num=5)
             tol_budget = tol_range[index_fidelity]
-        else:
+        elif self.mf == 0:
             min_tol = -np.log(0.2)
             max_tol = -np.log(self.tol_level)
             tol_res = min_tol + index_fidelity*(max_tol - min_tol)
             tol_budget = np.exp(-tol_res)
+        else:
+            raise ValueError(
+                "Please select one of two mf options multi_continuous_bench or multi_source_bench.")
 
         scaled_x = self.scale_domain(input_config)
 
