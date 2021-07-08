@@ -66,7 +66,7 @@ class Synt_bench():
     Methods
     -------
     evaluate(input_config):
-        Return cross-validation loss for configuration.
+        Return cross-validation loss divided by oracle for configuration.
     fidelity_evaluate(input_config, index_fidelity=None):
         Return cross-validation loss for configuration and fidelity index.
     test(input_config):
@@ -210,7 +210,7 @@ class Synt_bench():
 
         Returns
         -------
-        Cross-validation Loss
+        Cross-validation Loss divided by oracle. The goal is to be close or less than 1.
         """
         scaled_x = self.scale_domain(input_config)
 
@@ -223,7 +223,7 @@ class Synt_bench():
                                      log_alpha=scaled_x,
                                      monitor=monitor, tol=self.tol_level)
 
-        return val_loss
+        return val_loss/self.mspe_oracle
 
     def fidelity_evaluate(self, input_config, index_fidelity=None):
         """
@@ -238,7 +238,7 @@ class Synt_bench():
 
         Returns
         -------
-        Cross-validation Loss
+        Cross-validation Loss divided by oracle. The goal is to be close or less than 1.
         """
         if self.mf == 1:
             tol_range = np.geomspace(self.tol_level, 0.2, num=5)
@@ -263,7 +263,7 @@ class Synt_bench():
                                      log_alpha=scaled_x,
                                      monitor=monitor, tol=tol_budget)
 
-        return val_loss
+        return val_loss/self.mspe_oracle
 
     def test(self, input_config):
         """
