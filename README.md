@@ -12,7 +12,7 @@ From a console or terminal clone the repository and install LASSOBench:
     cd LASSOBench/
     pip install -e .
 
-## Simple synthetic bench code
+## Simple [synthetic](#list-of-synthetic-benchmarks) bench code
 
 ```python
 import numpy as np
@@ -23,7 +23,7 @@ d = synt_bench.n_features
 random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
 loss = synt_bench.evaluate(random_config)
 ```
-## Real-world bench code
+## [Real-world](#list-of-real-world-benchmarks) bench code
 
 ```python
 import numpy as np
@@ -46,7 +46,7 @@ random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
 fidelity_pick = 0
 loss = real_bench.fidelity_evaluate(random_config, index_fidelity=fidelity_pick)
 ```
-## List of syntentic benchmarks
+## List of synthetic benchmarks
 | Name         | Dimensionality | Axis-aligned Subspace |
 | :---         |     :---:      |          ---:         |
 | synt_low_eff_bench   | 256     | 8 |
@@ -54,7 +54,7 @@ loss = real_bench.fidelity_evaluate(random_config, index_fidelity=fidelity_pick)
 | synt_high_noise_bench| 256     | 8 |
 | synt_high_corr_bench     | 256 | 8 |
 | synt_hard_bench  | 1280 | 10 |
-## List of real-world benchmarks
+## List of real world benchmarks
 | Name         | Dimensionality | Approx. Axis-aligned Subspace |
 | :---         |     :---:      |          ---:         |
 | diabetes   | 10     | 1 |
