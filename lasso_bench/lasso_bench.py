@@ -27,7 +27,7 @@ from libsvmdata import fetch_libsvm
 import timeit
 
 
-class Synt_bench():
+class SyntheticBenchmark:
     """
     Creating a synthetic benchmark for a HPO algorithm.
 
@@ -397,7 +397,7 @@ class Synt_bench():
 
 
 
-class Realworld_bench():
+class RealworldBenchmark():
     """
     Creating a real-world benchmark for a HPO algorithm.
 

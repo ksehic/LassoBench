@@ -10,8 +10,8 @@ Example: HesBO on synthetic benchmark
 =================================================
 """
 import numpy as np
-import LASSOBench
-from hesbo_lib import RunMain as hesbo_run
+import lasso_bench
+from hesbo_lib import run_main as hesbo_run
 
 from joblib import Parallel, delayed
 import timeit
@@ -21,7 +21,7 @@ import matplotlib.gridspec as gridspec
 import seaborn as sns
 
 # define synt bench
-synt_bench = LASSOBench.Synt_bench(pick_bench='synt_low_eff_bench')
+synt_bench = lasso_bench.SyntheticBenchmark(pick_bench='synt_low_eff_bench')
 d = synt_bench.n_features
 
 
@@ -118,62 +118,62 @@ def run_hesbo(eff_dim, n_doe, n_total, ARD=True, n_repeat=0, n_seed=42, n_jobs=1
 
     return -loss, mspe_hesbo, fscore, elapsed
 
+if __name__ == '__main__':
+    # run Hesbo parallel on synt
+    initial_desing = 4
+    total_steps = 12
+    eff_dim = 2
+    n_repeat = 5
+    n_jobs = 5
 
-# run Hesbo parallel on synt
-initial_desing = 4
-total_steps = 12
-eff_dim = 2
-n_repeat = 5
-n_jobs = 5
+    loss_hesbo, mspe_hesbo, fscore_hesbo, time_hesbo = run_hesbo(
+        eff_dim=eff_dim, n_doe=initial_desing, n_total=total_steps, ARD=True,
+        n_repeat=n_repeat, n_seed=42, n_jobs=n_jobs)
 
-loss_hesbo, mspe_hesbo, fscore_hesbo, time_hesbo = run_hesbo(
-    eff_dim=eff_dim, n_doe=initial_desing, n_total=total_steps, ARD=True,
-    n_repeat=n_repeat, n_seed=42, n_jobs=n_jobs)
+    # plot
+    marker = ['p', 'X', 'o']
+    c_list = sns.color_palette("colorblind")
 
-# plot
-marker = ['p', 'X', 'o']
-c_list = sns.color_palette("colorblind")
+    plt.close('all')
+    fig = plt.figure(figsize=(26, 10.12), constrained_layout=True)
+    spec2 = gridspec.GridSpec(nrows=3, ncols=1, figure=fig)
 
-plt.close('all')
-fig = plt.figure(figsize=(26, 10.12), constrained_layout=True)
-spec2 = gridspec.GridSpec(nrows=3, ncols=1, figure=fig)
+    f_ax1 = fig.add_subplot(spec2[0, 0])
+    f_ax1.plot(range(1, total_steps + initial_desing + 1),
+               np.mean(loss_hesbo, axis=1), '--', color=c_list[0], linewidth=3,
+               marker=marker[0], markersize=10, label=r'Average Hesbo with $d_e=2$')
+    plt.legend(loc='best', fontsize=18)
+    plt.title('Loss', fontsize=18)
+    plt.xlabel('Iterations', fontsize=18)
+    plt.xlim(1, total_steps + initial_desing + 1)
+    plt.rc('xtick', labelsize=18)
+    plt.rc('ytick', labelsize=18)
+    plt.grid(True)
 
-f_ax1 = fig.add_subplot(spec2[0, 0])
-f_ax1.plot(range(1, total_steps + initial_desing + 1),
-           np.mean(loss_hesbo, axis=1), '--', color=c_list[0], linewidth=3,
-           marker=marker[0], markersize=10, label=r'Average Hesbo with $d_e=2$')
-plt.legend(loc='best', fontsize=18)
-plt.title('Loss', fontsize=18)
-plt.xlabel('Iterations', fontsize=18)
-plt.xlim(1, total_steps + initial_desing + 1)
-plt.rc('xtick', labelsize=18)
-plt.rc('ytick', labelsize=18)
-plt.grid(True)
+    f_ax2 = fig.add_subplot(spec2[1, 0])
+    f_ax2.plot(range(1, total_steps + initial_desing + 1),
+               np.mean(mspe_hesbo, axis=1), '--', color=c_list[1], linewidth=3,
+               marker=marker[1], markersize=10, label=r'Average Hesbo with $d_e=2$')
+    plt.legend(loc='best', fontsize=18)
+    plt.title('MSPE divided with oracle', fontsize=18)
+    plt.xlabel('Iterations', fontsize=18)
+    plt.xlim(1, total_steps + initial_desing + 1)
+    plt.rc('xtick', labelsize=18)
+    plt.rc('ytick', labelsize=18)
+    plt.grid(True)
 
-f_ax2 = fig.add_subplot(spec2[1, 0])
-f_ax2.plot(range(1, total_steps + initial_desing + 1),
-           np.mean(mspe_hesbo, axis=1), '--', color=c_list[1], linewidth=3,
-           marker=marker[1], markersize=10, label=r'Average Hesbo with $d_e=2$')
-plt.legend(loc='best', fontsize=18)
-plt.title('MSPE divided with oracle', fontsize=18)
-plt.xlabel('Iterations', fontsize=18)
-plt.xlim(1, total_steps + initial_desing + 1)
-plt.rc('xtick', labelsize=18)
-plt.rc('ytick', labelsize=18)
-plt.grid(True)
+    f_ax3 = fig.add_subplot(spec2[2, 0])
+    f_ax3.plot(range(1, total_steps + initial_desing + 1),
+               np.mean(fscore_hesbo, axis=1), '--', color=c_list[2], linewidth=3,
+               marker=marker[2], markersize=10, label=r'Average Hesbo with $d_e=2$')
+    plt.legend(loc='best', fontsize=18)
+    plt.title('Fscore', fontsize=18)
+    plt.xlabel('Iterations', fontsize=18)
+    plt.xlim(1, total_steps + initial_desing + 1)
+    plt.rc('xtick', labelsize=18)
+    plt.rc('ytick', labelsize=18)
+    plt.grid(True)
 
-f_ax3 = fig.add_subplot(spec2[2, 0])
-f_ax3.plot(range(1, total_steps + initial_desing + 1),
-           np.mean(fscore_hesbo, axis=1), '--', color=c_list[2], linewidth=3,
-           marker=marker[2], markersize=10, label=r'Average Hesbo with $d_e=2$')
-plt.legend(loc='best', fontsize=18)
-plt.title('Fscore', fontsize=18)
-plt.xlabel('Iterations', fontsize=18)
-plt.xlim(1, total_steps + initial_desing + 1)
-plt.rc('xtick', labelsize=18)
-plt.rc('ytick', labelsize=18)
-plt.grid(True)
+    plt.show()
 
-plt.show()
-
-# END
+    # END
