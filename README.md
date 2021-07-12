@@ -25,15 +25,15 @@ based on real world applications found in medicine and finance, SyntheticBenchma
 
 Please refer the reference for more details.
 
-.
-├── ...
-├── example                    # Examples how to use LassoBench for HDBO algorithms
-│   ├── alebo_example.py       # ALEBO applied on synt bench
-│   ├── example.py             # Simple cases with synt, real and multifidelity benchs
-│   ├── hesbo_example.py        # HesBO applied on synt bench
-│   ├── hesbo_lib.pu            # HesBO library
-│
-└── ...
+    .
+    ├── ...
+    ├── example                    # Examples how to use LassoBench for HDBO algorithms
+    │   ├── alebo_example.py       # ALEBO applied on synt bench
+    │   ├── example.py             # Simple cases with synt, real and multifidelity benchs
+    │   ├── hesbo_example.py        # HesBO applied on synt bench
+    │   ├── hesbo_lib.pu            # HesBO library
+    │
+    └── ...
 
 ## Simple [synthetic](#list-of-synthetic-benchmarks) bench code
 ```python
