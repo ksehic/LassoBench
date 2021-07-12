@@ -15,7 +15,7 @@ From a console or terminal clone the repository and install LassoBench:
     pip install -e .
 
 ## Overview
-The objective is to optimize the multi-dimensional hyperparameter \lambda that balances
+The objective is to optimize the multi-dimensional hyperparameter that balances
 the least-squares estimation and the penalty term that promotes the sparsity.
 
 The ambient space bounds are defined between [-1, 1].
