@@ -27,7 +27,7 @@ from libsvmdata import fetch_libsvm
 import timeit
 
 
-class Synt_bench():
+class SyntheticBenchmark():
     """
     Creating a synthetic benchmark for a HPO algorithm.
 
@@ -39,6 +39,8 @@ class Synt_bench():
         name of a predefined bench such as
         synt_low_eff_bench, synt_high_eff_bench, synt_high_noise_bench,
         synt_high_corr_bench and synt_hard_bench
+    noise : str, optional
+        increasing the noise level for the predefined bench
     mf_opt : str, optional
         name of a multi-fidelity framework
         multi_continuous_bench or multi_source_bench
@@ -80,7 +82,7 @@ class Synt_bench():
         fscore and time elapsed.
     """
 
-    def __init__(self, pick_bench=None, mf_opt=None, n_features=1280, n_samples=640,
+    def __init__(self, pick_bench=None, noise=False, mf_opt=None, n_features=1280, n_samples=640,
                  snr_level=1, corr_level=0.6, n_nonzeros=10, tol_level=1e-4,
                  w_true=None, n_splits=5, test_size=0.15, seed=42):
         """
@@ -92,6 +94,8 @@ class Synt_bench():
                 name of a predefined bench such as
                 synt_low_eff_bench, synt_high_eff_bench, synt_high_noise_bench,
                 synt_high_corr_bench and synt_hard_bench
+            noise : str, optional
+                increasing the noise level for the predefined bench (default: False)
             mf_opt : str, optional
                 name of a multi-fidelity framework
                 multi_continuous_bench or multi_source_bench
@@ -397,7 +401,7 @@ class Synt_bench():
 
 
 
-class Realworld_bench():
+class RealBenchmark():
     """
     Creating a real-world benchmark for a HPO algorithm.
 

@@ -18,7 +18,6 @@ LINK: https://github.com/aminnayebi/HesBO
 """
 
 import numpy as np
-from tqdm import tqdm
 from scipy.stats import norm
 import timeit
 from pyDOE import lhs
