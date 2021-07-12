@@ -15,15 +15,15 @@ From a console or terminal clone the repository and install LassoBench:
     pip install -e .
 
 ## Overview
-The objective is to optimize the multi-dimensional hyperparameter $\lambda$ that balances
+The objective is to optimize the multi-dimensional hyperparameter \lambda that balances
 the least-squares estimation and the penalty term that promotes the sparsity.
 
-The ambient space bounds are defined between $\lambda\in[-1, 1]$.
+The ambient space bounds are defined between [-1, 1].
 
 LassoBench comes with two classes SyntheticBenchmark and RealBenchmark. While RealBenchmark is
-based on real world applications found in medicine and finance, SyntheticBenchmark covers synthentic well-defined conditions.
+based on real-world applications found in medicine and finance, SyntheticBenchmark covers synthetic well-defined conditions.
 
-Please refer the reference for more details.
+Please refer to the reference for more details.
 
     .
     ├── ...
@@ -44,7 +44,7 @@ d = synt_bench.n_features
 random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
 loss = synt_bench.evaluate(random_config)
 ```
-## ## [Real-world](#list-of-real-world-benchmarks) bench code
+## [Real-world](#list-of-real-world-benchmarks) bench code
 ```python
 import numpy as np
 import LassoBench
