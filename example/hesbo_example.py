@@ -21,7 +21,7 @@ import matplotlib.gridspec as gridspec
 import seaborn as sns
 
 # define synt bench
-synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_low_eff_bench')
+synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_high30')
 d = synt_bench.n_features
 
 

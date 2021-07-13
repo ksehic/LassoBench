@@ -23,13 +23,15 @@ The ambient space bounds are defined between [-1, 1].
 LassoBench comes with two classes SyntheticBenchmark and RealBenchmark. While RealBenchmark is
 based on real-world applications found in medicine and finance, SyntheticBenchmark covers synthetic well-defined conditions.
 
+The results are compared with the baselines LassoCV, AdaptiveLassoCV (to be implemented soon) and Sparse-HO.
+
 Please refer to the reference for more details.
 
     .
     ├── ...
     ├── example                    # Examples how to use LassoBench for HDBO algorithms
     │   ├── alebo_example.py       # ALEBO applied on synt bench
-    │   ├── example.py             # Simple cases with synt, real and multifidelity benchs
+    │   ├── example.py             # Simple cases how to run with synt, real and multifidelity benchs
     │   ├── hesbo_example.py        # HesBO applied on synt bench
     │   ├── hesbo_lib.pu            # HesBO library
     │
@@ -39,7 +41,7 @@ Please refer to the reference for more details.
 ```python
 import numpy as np
 import LassoBench
-synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_high_noise_bench')
+synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple3')
 d = synt_bench.n_features
 random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
 loss = synt_bench.evaluate(random_config)
@@ -64,13 +66,14 @@ fidelity_pick = 0
 loss = real_bench_mf.fidelity_evaluate(random_config, index_fidelity=fidelity_pick)
 ```
 ## List of synthetic benchmarks
-| Name         | Dimensionality | Axis-aligned Subspace |
-| :---         |     :---:      |          ---:         |
-| synt_low_eff_bench   | 256     | 8 |
-| synt_high_eff_bench     | 256  | 20|
-| synt_high_noise_bench| 256     | 8 |
-| synt_high_corr_bench     | 256 | 8 |
-| synt_hard_bench  | 1280 | 10 |
+| Name          | Dimensionality | Axis-aligned Subspace |
+| :---          |     :---:      |          ---:         |
+| synt_simple3  | 60    | 3 |
+| synt_simple6  | 60    | 6|
+| synt_medium5  | 100   | 5 |
+| synt_medium10 | 100   | 10 |
+| synt_high15   | 300   | 15 |
+| synt_high30   | 300   | 30 |
 ## List of real world benchmarks
 | Name         | Dimensionality | Approx. Axis-aligned Subspace |
 | :---         |     :---:      |          ---:         |

@@ -16,7 +16,7 @@ import LassoBench
 if __name__ == '__main__':
 
     # prepare benchmark
-    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_low_noise_bench')
+    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple3', noise=True)
     d = synt_bench.n_features
 
     # generate random config within [-1, 1]
@@ -36,10 +36,10 @@ if __name__ == '__main__':
         mspe[i], fscore[i] = synt_bench.test(random_config[i, :])
 
     # run lassocv
-    loss_lcv, mspe_lcv, fscore_lcv, config_lcv, time_lcv = synt_bench.run_LASSOCV()
+    loss_lcv, mspe_lcv, fscore_lcv, time_lcv = synt_bench.run_LASSOCV()
 
     # run sparse-ho
-    loss_sho, mspe_sho, fscore_sho, config_sho, reg_sho, time_sho = synt_bench.run_sparseho(n_steps=30)
+    loss_sho, mspe_sho, fscore_sho, time_sho = synt_bench.run_sparseho(n_steps=30)
 
     # define real world and run on cheap fidelity
     real_bench = LassoBench.RealBenchmark(pick_data='rcv1', mf_opt='multi_source_bench')

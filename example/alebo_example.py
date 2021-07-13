@@ -86,7 +86,7 @@ def run_alebo(low_d, n_doe, n_total, bench):
 
 if __name__ == '__main__':
     # define synt bench
-    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_high_eff_bench')
+    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple3')
     d = synt_bench.n_features
 
     # run ALEBO

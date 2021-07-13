@@ -37,8 +37,12 @@ class SyntheticBenchmark():
     ----------
     pick_bench : str
         name of a predefined bench such as
-        synt_low_eff_bench, synt_high_eff_bench, synt_high_noise_bench,
-        synt_high_corr_bench and synt_hard_bench
+        synt_simple3
+        synt_simple6
+        synt_medium5
+        synt_medium10
+        synt_high15
+        synt_high30
     noise : str, optional
         increasing the noise level for the predefined bench
     mf_opt : str, optional
@@ -92,8 +96,12 @@ class SyntheticBenchmark():
         ----------
             pick_bench : str
                 name of a predefined bench such as
-                synt_low_eff_bench, synt_high_eff_bench, synt_high_noise_bench,
-                synt_high_corr_bench and synt_hard_bench
+                synt_simple3
+                synt_simple6
+                synt_medium5
+                synt_medium10
+                synt_high15
+                synt_high30
             noise : str, optional
                 increasing the noise level for the predefined bench (default: False)
             mf_opt : str, optional
@@ -122,36 +130,54 @@ class SyntheticBenchmark():
         """
 
         if pick_bench is not None:
-            if pick_bench == 'synt_low_eff_bench':
-                n_features = 256
-                n_samples = 128
-                snr_level = 10
-                corr_level = 0.6
-                n_nonzeros = 8
-            elif pick_bench == 'synt_high_eff_bench':
-                n_features = 256
-                n_samples = 128
-                snr_level = 10
-                corr_level = 0.6
-                n_nonzeros = 20
-            elif pick_bench == 'synt_high_noise_bench':
-                n_features = 256
-                n_samples = 128
+
+            if noise is True:
                 snr_level = 3
-                corr_level = 0.6
-                n_nonzeros = 8
-            elif pick_bench == 'synt_high_corr_bench':
-                n_features = 256
-                n_samples = 128
+            else:
                 snr_level = 10
-                corr_level = 0.9
-                n_nonzeros = 8
-            elif pick_bench == 'synt_hard_bench':
-                n_features = 1280
-                n_samples = 640
-                snr_level = 1
+
+            if pick_bench == 'synt_simple3':
+                n_features = 60
+                n_samples = 30
                 corr_level = 0.6
-                n_nonzeros = 10
+                w_true = np.zeros(n_features)
+                size_supp = 3
+                w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
+            elif pick_bench == 'synt_simple6':
+                n_features = 60
+                n_samples = 30
+                corr_level = 0.6
+                w_true = np.zeros(n_features)
+                size_supp = 6
+                w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
+            elif pick_bench == 'synt_medium5':
+                n_features = 100
+                n_samples = 50
+                corr_level = 0.6
+                w_true = np.zeros(n_features)
+                size_supp = 5
+                w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
+            elif pick_bench == 'synt_medium10':
+                n_features = 100
+                n_samples = 50
+                corr_level = 0.6
+                w_true = np.zeros(n_features)
+                size_supp = 10
+                w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
+            elif pick_bench == 'synt_high15':
+                n_features = 300
+                n_samples = 150
+                corr_level = 0.6
+                w_true = np.zeros(n_features)
+                size_supp = 15
+                w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
+            elif pick_bench == 'synt_high30':
+                n_features = 300
+                n_samples = 150
+                corr_level = 0.6
+                w_true = np.zeros(n_features)
+                size_supp = 30
+                w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
             else:
                 raise ValueError(
                     "Please select one of the predefined benchmarks or creat your own.")
@@ -195,6 +221,8 @@ class SyntheticBenchmark():
         self.coef_true_support = np.abs(self.w_true) > self.eps_support
         self.mspe_oracle = mean_squared_error(
             self.X_test @ self.w_true, self.y_test)
+        self.loss_oracle = mean_squared_error(
+            self.X_train @ self.w_true, self.y_train)
 
     def scale_domain(self, x):
         # Scaling the domain
@@ -227,7 +255,7 @@ class SyntheticBenchmark():
                                      log_alpha=scaled_x,
                                      monitor=monitor, tol=self.tol_level)
 
-        return val_loss/self.mspe_oracle
+        return val_loss/self.loss_oracle
 
     def fidelity_evaluate(self, input_config, index_fidelity=None):
         """
@@ -267,7 +295,7 @@ class SyntheticBenchmark():
                                      log_alpha=scaled_x,
                                      monitor=monitor, tol=tol_budget)
 
-        return val_loss/self.mspe_oracle
+        return val_loss/self.loss_oracle
 
     def test(self, input_config):
         """
@@ -285,7 +313,7 @@ class SyntheticBenchmark():
         estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
         estimator.weights = np.exp(scaled_x)
         estimator.fit(self.X_train, self.y_train)
-        reg_coef = estimator.coef_
+        # reg_coef = estimator.coef_
         coef_hpo_support = np.abs(estimator.coef_) > self.eps_support
         fscore = f1_score(self.coef_true_support, coef_hpo_support)
         mspe = mean_squared_error(estimator.predict(self.X_test), self.y_test)
@@ -329,7 +357,7 @@ class SyntheticBenchmark():
         coef_lcv_support = np.abs(model_lcv.coef_) > self.eps_support
         fscore = f1_score(self.coef_true_support, coef_lcv_support)
 
-        return loss_lcv, mspe_lcv/self.mspe_oracle, fscore, elapsed
+        return loss_lcv/self.loss_oracle, mspe_lcv/self.mspe_oracle, fscore, elapsed
 
     def run_sparseho(self, grad_solver='gd', algo_pick='imp_forw', n_steps=10, init_point=None):
         """
@@ -397,7 +425,7 @@ class SyntheticBenchmark():
             coef_sho_support = np.abs(estimator.coef_) > self.eps_support
             fscore[i] = f1_score(self.coef_true_support, coef_sho_support)
 
-        return monitor.objs, mspe/self.mspe_oracle, fscore, monitor.times
+        return monitor.objs/self.loss_oracle, mspe/self.mspe_oracle, fscore, monitor.times
 
 
 
