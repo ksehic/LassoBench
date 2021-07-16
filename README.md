@@ -74,6 +74,8 @@ loss = real_bench_mf.fidelity_evaluate(random_config, index_fidelity=fidelity_pi
 | synt_medium10 | 100   | 10 |
 | synt_high15   | 300   | 15 |
 | synt_high30   | 300   | 30 |
+| synt_hard30   | 1000   | 50 |
+| synt_hard30   | 1000   | 100 |
 ## List of real world benchmarks
 | Name         | Dimensionality | Approx. Axis-aligned Subspace |
 | :---         |     :---:      |          ---:         |

@@ -178,6 +178,20 @@ class SyntheticBenchmark():
                 w_true = np.zeros(n_features)
                 size_supp = 30
                 w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
+            elif pick_bench == 'synt_hard50':
+                n_features = 1000
+                n_samples = 500
+                corr_level = 0.6
+                w_true = np.zeros(n_features)
+                size_supp = 50
+                w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
+            elif pick_bench == 'synt_hard100':
+                n_features = 1000
+                n_samples = 500
+                corr_level = 0.6
+                w_true = np.zeros(n_features)
+                size_supp = 100
+                w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
             else:
                 raise ValueError(
                     "Please select one of the predefined benchmarks or creat your own.")
