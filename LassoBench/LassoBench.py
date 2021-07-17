@@ -533,6 +533,7 @@ class RealBenchmark():
                     "Please select one of two mf options multi_continuous_bench or multi_source_bench.")
 
         self.n_features = X.shape[1]
+        self.n_splits = n_splits
 
         # split train and test
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
