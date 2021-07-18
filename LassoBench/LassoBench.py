@@ -515,8 +515,8 @@ class RealBenchmark():
         elif pick_data == 'rcv1':
             X, y = fetch_libsvm('rcv1.binary')
             alpha_scale = 1e3
-        elif pick_data == 'news20':
-            X, y = fetch_libsvm('news20.binary')
+        elif pick_data == 'dna':
+            X, y = fetch_libsvm('dna')
             alpha_scale = 1e5
         else:
             raise ValueError("Unsupported dataset %s" % pick_data)
@@ -534,6 +534,7 @@ class RealBenchmark():
 
         self.n_features = X.shape[1]
         self.n_splits = n_splits
+        # self.XX = X
 
         # split train and test
         self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
@@ -668,10 +669,10 @@ class RealBenchmark():
         model_lcv.fit(self.X_train, self.y_train)
         t1 = timeit.default_timer()
         elapsed = t1 - t0
-
+        # self.reg = model_lcv.coef_
         min_lcv = np.where(model_lcv.mse_path_ == np.min(model_lcv.mse_path_))
         loss_lcv = np.mean(model_lcv.mse_path_[min_lcv[0]])
-
+        # self.minal = alphas[min_lcv[0]]
         mspe_lcv = mean_squared_error(
             model_lcv.predict(self.X_test), self.y_test)
 
@@ -697,7 +698,8 @@ class RealBenchmark():
         Cross-validation loss, MSPE divided by oracle and time elapsed
         """
 
-        init_point_scale = self.scale_domain(init_point)
+        if init_point is not None:
+            init_point_scale = self.scale_domain(init_point)
 
         estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=True)
         model = WeightedLasso(estimator=estimator)
