@@ -18,11 +18,6 @@ from ax.service.managed_loop import optimize
 from joblib import Parallel, delayed
 import multiprocessing
 
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import seaborn as sns
-
-
 # define objective function for parallel
 def run_alebo(low_d, n_doe, n_total, bench):
     """
@@ -86,7 +81,7 @@ def run_alebo(low_d, n_doe, n_total, bench):
 
 if __name__ == '__main__':
     # define synt bench
-    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple3')
+    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple')
     d = synt_bench.n_features
 
     # run ALEBO
@@ -113,48 +108,4 @@ if __name__ == '__main__':
             config = par_res[i][2]
             mspe_alebo[j, i], fscore_alebo[j, i] = synt_bench.test(input_config=config[j, :])
 
-    # plot
-    marker = ['p', 'X', 'o']
-    c_list = sns.color_palette("colorblind")
-
-    plt.close('all')
-    fig = plt.figure(figsize=(26, 10.12), constrained_layout=True)
-    spec2 = gridspec.GridSpec(nrows=3, ncols=1, figure=fig)
-
-    f_ax1 = fig.add_subplot(spec2[0, 0])
-    f_ax1.plot(range(1, n_total + 1),
-               np.mean(loss_alebo, axis=1), '--', color=c_list[0], linewidth=3,
-               marker=marker[0], markersize=10, label=r'Average ALEBO with $d_e=10$')
-    plt.legend(loc='best', fontsize=18)
-    plt.title('Loss', fontsize=18)
-    plt.xlabel('Iterations', fontsize=18)
-    plt.xlim(1, n_total + 1)
-    plt.rc('xtick', labelsize=18)
-    plt.rc('ytick', labelsize=18)
-    plt.grid(True)
-
-    f_ax2 = fig.add_subplot(spec2[1, 0])
-    f_ax2.plot(range(1, n_total + 1),
-               np.mean(mspe_alebo, axis=1), '--', color=c_list[1], linewidth=3,
-               marker=marker[1], markersize=10, label=r'Average ALEBO with $d_e=10$')
-    plt.legend(loc='best', fontsize=18)
-    plt.title('MSPE divided with oracle', fontsize=18)
-    plt.xlabel('Iterations', fontsize=18)
-    plt.xlim(1, n_total + 1)
-    plt.rc('xtick', labelsize=18)
-    plt.rc('ytick', labelsize=18)
-    plt.grid(True)
-
-    f_ax3 = fig.add_subplot(spec2[2, 0])
-    f_ax3.plot(range(1, n_total + 1),
-               np.mean(fscore_alebo, axis=1), '--', color=c_list[2], linewidth=3,
-               marker=marker[2], markersize=10, label=r'Average ALEBO with $d_e=10$')
-    plt.legend(loc='best', fontsize=18)
-    plt.title('Fscore', fontsize=18)
-    plt.xlabel('Iterations', fontsize=18)
-    plt.xlim(1, n_total + 1)
-    plt.rc('xtick', labelsize=18)
-    plt.rc('ytick', labelsize=18)
-    plt.grid(True)
-
-    plt.show()
+    # END

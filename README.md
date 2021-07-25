@@ -41,7 +41,7 @@ Please refer to the reference for more details.
 ```python
 import numpy as np
 import LassoBench
-synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple3')
+synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple')
 d = synt_bench.n_features
 random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
 loss = synt_bench.evaluate(random_config)
@@ -59,7 +59,7 @@ loss = real_bench.evaluate(random_config)
 ```python
 import numpy as np
 import LassoBench
-real_bench_mf = LassoBench.RealBenchmark(pick_data='rcv1', mf_opt='multi_source_bench')
+real_bench_mf = LassoBench.RealBenchmark(pick_data='rcv1', mf_opt='multi_discrete')
 d = real_bench_mf.n_features
 random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
 fidelity_pick = 0
@@ -68,22 +68,19 @@ loss = real_bench_mf.fidelity_evaluate(random_config, index_fidelity=fidelity_pi
 ## List of synthetic benchmarks
 | Name          | Dimensionality | Axis-aligned Subspace |
 | :---          |     :---:      |          ---:         |
-| synt_simple3  | 60    | 3 |
-| synt_simple6  | 60    | 6|
-| synt_medium5  | 100   | 5 |
-| synt_medium10 | 100   | 10 |
-| synt_high15   | 300   | 15 |
-| synt_high30   | 300   | 30 |
-| synt_hard30   | 1000   | 50 |
-| synt_hard30   | 1000   | 100 |
+| synt_simple  | 60    | 3 |
+| synt_medium  | 100   | 5 |
+| synt_high   | 300   | 15 |
+| synt_hard   | 1000   | 50 |
 ## List of real world benchmarks
 | Name         | Dimensionality | Approx. Axis-aligned Subspace |
 | :---         |     :---:      |          ---:         |
-| diabetes   | 10     | 1 |
-| breast_cancer     | 30  | 8|
-| leukemia| 7 129     | 72 |
-| rcv1     | 19 960 | 1 542 |
-| news20  | 632 983 | 1 920 |
+| breast_cancer | 10 | 683 | 3 |
+| diabetes | 8 | 768 | 5 |
+| leukemia | 7 129 | 38 | 22 |
+| dna | 180 | 2 000 | 43 |
+| rcv1 | 19 959 | 20 242 | 75 |
+
 ## Cite
 
 If you use this code, please cite: TBD

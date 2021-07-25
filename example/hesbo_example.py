@@ -6,7 +6,7 @@ High-Dimensional Hyperparameter
 Optimization Benchmark
 Contact: kenan.sehic@cs.lth.se
 
-Example: HesBO on synthetic benchmark
+Example: HesBO on synthetic and real benchmark
 =================================================
 """
 import numpy as np
@@ -16,13 +16,11 @@ from hesbo_lib import RunMain as hesbo_run
 from joblib import Parallel, delayed
 import timeit
 
-import matplotlib.pyplot as plt
-import matplotlib.gridspec as gridspec
-import seaborn as sns
-
 # define synt bench
-synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_high30')
-d = synt_bench.n_features
+# synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_high')
+real_bench = LassoBench.RealBenchmark(pick_data='rcv1')
+# d = synt_bench.n_features
+d = real_bench.n_features
 
 
 # prepare objective function
@@ -38,13 +36,15 @@ def evaluate_hesbo(config_x):
             config[z] = i[z]
 
         if len(config_x.shape) == 1:
-            obj_value = synt_bench.evaluate(input_config=config)
+            # obj_value = synt_bench.evaluate(input_config=config)
+            obj_value = real_bench.evaluate(input_config=config)
             obj_value = np.array([obj_value])
             obj_value = obj_value.reshape(1, 1)
             config_all = config
             time_stop = timeit.default_timer()
         else:
-            obj_value[j] = synt_bench.evaluate(input_config=config)
+            # obj_value[j] = synt_bench.evaluate(input_config=config)
+            obj_value[j] = real_bench.evaluate(input_config=config)
             time_stop[j] = timeit.default_timer()
             config_all[j, :] = config
             j = j + 1
@@ -87,7 +87,8 @@ def run_hesbo(eff_dim, n_doe, n_total, ARD=True, n_repeat=0, n_seed=42, n_jobs=1
             elapsed[:, i] = np.squeeze(par_res[i][0])
             config_par = par_res[i][2]
             for j in range(n_total):
-                mspe_hesbo[j, i], fscore[j, i] = synt_bench.test(input_config=config_par[j, :])
+                # mspe_hesbo[j, i], fscore[j, i] = synt_bench.test(input_config=config_par[j, :])
+                mspe_hesbo[j, i] = real_bench.test(input_config=config_par[j, :])
     else:
         if n_repeat > 1:
             random_seeds = np.random.randint(200000000, size=n_repeat)
@@ -104,7 +105,8 @@ def run_hesbo(eff_dim, n_doe, n_total, ARD=True, n_repeat=0, n_seed=42, n_jobs=1
                 loss[:, i] = loss0[:, 0]
                 elapsed[:, i] = elapsed0[0, :]
                 for j in range(n_total):
-                    mspe_hesbo[j, i], fscore[j, i] = synt_bench.test(input_config=config0[j, :])
+                    # mspe_hesbo[j, i], fscore[j, i] = synt_bench.test(input_config=config0[j, :])
+                    mspe_hesbo[j, i] = real_bench.test(input_config=config0[j, :])
         else:
             _, elapsed, _, loss, _, config = hesbo_run(
                 low_dim=eff_dim, high_dim=d, initial_n=n_doe,
@@ -114,68 +116,42 @@ def run_hesbo(eff_dim, n_doe, n_total, ARD=True, n_repeat=0, n_seed=42, n_jobs=1
             fscore = np.empty((n_total,))
             config_all = np.empty((n_total, d))
             for i in range(n_total):
-                mspe_hesbo[j, i], fscore[j, i] = synt_bench.test(input_config=config[i, :])
+                # mspe_hesbo[j, i], fscore[j, i] = synt_bench.test(input_config=config[i, :])
+                mspe_hesbo[j, i] = real_bench.test(input_config=config[i, :])
 
-    return -loss, mspe_hesbo, fscore, elapsed
+    # return -loss, mspe_hesbo, fscore, elapsed
+    return -loss, mspe_hesbo, elapsed
 
 
 if __name__ == '__main__':
 
-    # run Hesbo parallel on synt
-    initial_desing = 4
-    total_steps = 12
-    eff_dim = 2
-    n_repeat = 5
-    n_jobs = 5
+    import multiprocessing
+    n_jobs = multiprocessing.cpu_count()
+    total_steps = 1000
+    eff_dim = np.array([2, 5, 10, 20])
+    n_repeat = 30
 
-    loss_hesbo, mspe_hesbo, fscore_hesbo, time_hesbo = run_hesbo(
-        eff_dim=eff_dim, n_doe=initial_desing, n_total=total_steps, ARD=True,
-        n_repeat=n_repeat, n_seed=42, n_jobs=n_jobs)
+    loss_hesbo_n = []
+    mspe_hesbo_n = []
+    time_hesbo_n = []
 
-    # plot
-    marker = ['p', 'X', 'o']
-    c_list = sns.color_palette("colorblind")
+    for i in range(4):
 
-    plt.close('all')
-    fig = plt.figure(figsize=(26, 10.12), constrained_layout=True)
-    spec2 = gridspec.GridSpec(nrows=3, ncols=1, figure=fig)
+        de = eff_dim[i]
 
-    f_ax1 = fig.add_subplot(spec2[0, 0])
-    f_ax1.plot(range(1, total_steps + initial_desing + 1),
-            np.mean(loss_hesbo, axis=1), '--', color=c_list[0], linewidth=3,
-            marker=marker[0], markersize=10, label=r'Average Hesbo with $d_e=2$')
-    plt.legend(loc='best', fontsize=18)
-    plt.title('Loss', fontsize=18)
-    plt.xlabel('Iterations', fontsize=18)
-    plt.xlim(1, total_steps + initial_desing + 1)
-    plt.rc('xtick', labelsize=18)
-    plt.rc('ytick', labelsize=18)
-    plt.grid(True)
+        # run Hesbo parallel on synt
+        initial_desing = de + 1
 
-    f_ax2 = fig.add_subplot(spec2[1, 0])
-    f_ax2.plot(range(1, total_steps + initial_desing + 1),
-            np.mean(mspe_hesbo, axis=1), '--', color=c_list[1], linewidth=3,
-            marker=marker[1], markersize=10, label=r'Average Hesbo with $d_e=2$')
-    plt.legend(loc='best', fontsize=18)
-    plt.title('MSPE divided with oracle', fontsize=18)
-    plt.xlabel('Iterations', fontsize=18)
-    plt.xlim(1, total_steps + initial_desing + 1)
-    plt.rc('xtick', labelsize=18)
-    plt.rc('ytick', labelsize=18)
-    plt.grid(True)
+        # loss_hesbo, mspe_hesbo, fscore_hesbo, time_hesbo = run_hesbo(
+        #     eff_dim=eff_dim, n_doe=initial_desing, n_total=total_steps, ARD=True,
+        #     n_repeat=n_repeat, n_seed=42, n_jobs=n_jobs)
 
-    f_ax3 = fig.add_subplot(spec2[2, 0])
-    f_ax3.plot(range(1, total_steps + initial_desing + 1),
-            np.mean(fscore_hesbo, axis=1), '--', color=c_list[2], linewidth=3,
-            marker=marker[2], markersize=10, label=r'Average Hesbo with $d_e=2$')
-    plt.legend(loc='best', fontsize=18)
-    plt.title('Fscore', fontsize=18)
-    plt.xlabel('Iterations', fontsize=18)
-    plt.xlim(1, total_steps + initial_desing + 1)
-    plt.rc('xtick', labelsize=18)
-    plt.rc('ytick', labelsize=18)
-    plt.grid(True)
+        loss_hesbo, mspe_hesbo, time_hesbo = run_hesbo(
+            eff_dim=de, n_doe=initial_desing, n_total=total_steps, ARD=True,
+            n_repeat=n_repeat, n_seed=42, n_jobs=n_jobs)
 
-    plt.show()
+        loss_hesbo_n.append(loss_hesbo)
+        mspe_hesbo_n.append(mspe_hesbo)
+        time_hesbo_n.append(time_hesbo)
 
     # END

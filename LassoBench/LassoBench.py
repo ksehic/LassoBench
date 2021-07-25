@@ -47,7 +47,7 @@ class SyntheticBenchmark():
         increasing the noise level for the predefined bench
     mf_opt : str, optional
         name of a multi-fidelity framework
-        multi_continuous_bench or multi_source_bench
+        multi_continuous or multi_discrete
     n_features : int, optional
         number of features in design matrix i.e. the dimension of search space
     n_samples : int, optional
@@ -106,7 +106,7 @@ class SyntheticBenchmark():
                 increasing the noise level for the predefined bench (default: False)
             mf_opt : str, optional
                 name of a multi-fidelity framework
-                multi_continuous_bench or multi_source_bench
+                multi_continuous or multi_discrete
             n_features : int, optional
                 number of features in design matrix i.e. the dimension of search space
             n_samples : int, optional
@@ -136,47 +136,26 @@ class SyntheticBenchmark():
             else:
                 snr_level = 10
 
-            if pick_bench == 'synt_simple3':
+            if pick_bench == 'synt_simple':
                 n_features = 60
                 n_samples = 30
                 corr_level = 0.6
                 w_true = np.zeros(n_features)
                 size_supp = 3
                 w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
-            elif pick_bench == 'synt_simple6':
-                n_features = 60
-                n_samples = 30
-                corr_level = 0.6
-                w_true = np.zeros(n_features)
-                size_supp = 6
-                w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
-            elif pick_bench == 'synt_medium5':
+            elif pick_bench == 'synt_medium':
                 n_features = 100
                 n_samples = 50
                 corr_level = 0.6
                 w_true = np.zeros(n_features)
                 size_supp = 5
                 w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
-            elif pick_bench == 'synt_medium10':
-                n_features = 100
-                n_samples = 50
-                corr_level = 0.6
-                w_true = np.zeros(n_features)
-                size_supp = 10
-                w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
-            elif pick_bench == 'synt_high15':
+            elif pick_bench == 'synt_high':
                 n_features = 300
                 n_samples = 150
                 corr_level = 0.6
                 w_true = np.zeros(n_features)
                 size_supp = 15
-                w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
-            elif pick_bench == 'synt_high30':
-                n_features = 300
-                n_samples = 150
-                corr_level = 0.6
-                w_true = np.zeros(n_features)
-                size_supp = 30
                 w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
             elif pick_bench == 'synt_hard50':
                 n_features = 1000
@@ -185,13 +164,6 @@ class SyntheticBenchmark():
                 w_true = np.zeros(n_features)
                 size_supp = 50
                 w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
-            elif pick_bench == 'synt_hard100':
-                n_features = 1000
-                n_samples = 500
-                corr_level = 0.6
-                w_true = np.zeros(n_features)
-                size_supp = 100
-                w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
             else:
                 raise ValueError(
                     "Please select one of the predefined benchmarks or creat your own.")
@@ -199,13 +171,13 @@ class SyntheticBenchmark():
         self.mf = 2
 
         if mf_opt is not None:
-            if mf_opt == 'multi_continuous_bench':
+            if mf_opt == 'multi_continuous':
                 self.mf = 0
-            elif mf_opt == 'multi_source_bench':
+            elif mf_opt == 'multi_discrete':
                 self.mf = 1
             else:
                 raise ValueError(
-                    "Please select one of two mf options multi_continuous_bench or multi_source_bench.")
+                    "Please select one of two mf options multi_continuous or multi_discrete.")
 
         self.tol_level = tol_level
         self.n_features = n_features
@@ -280,14 +252,15 @@ class SyntheticBenchmark():
         input_config : array size of n_features
         index_fidelity : int, optional
             If mf_opt is selected, then selecting which fidelity to evaluate. (default is None)
-            For multi_source_bench, index_fidelity is a dicreate par between 0 and 5.
+            For multi_discrete, index_fidelity is a dicreate par between 0 and 5.
 
         Returns
         -------
         Cross-validation Loss divided by oracle. The goal is to be close or less than 1.
         """
         if self.mf == 1:
-            tol_range = np.geomspace(self.tol_level, 0.2, num=5)
+            # tol_range = np.geomspace(self.tol_level, 0.2, num=5)
+            tol_range = np.array([0.2, 0.1, 1e-2, 1e-3, 1e-4])
             tol_budget = tol_range[index_fidelity]
         elif self.mf == 0:
             min_tol = -np.log(0.2)
@@ -296,7 +269,7 @@ class SyntheticBenchmark():
             tol_budget = np.exp(-tol_res)
         else:
             raise ValueError(
-                "Please select one of two mf options multi_continuous_bench or multi_source_bench.")
+                "Please select one of two mf options multi_continuous or multi_discrete.")
 
         scaled_x = self.scale_domain(input_config)
 
@@ -456,7 +429,7 @@ class RealBenchmark():
         diabetes, breast_cancer, leukemia, rcv1, news20
     mf_opt : str, optional
         name of a multi-fidelity framework
-        multi_continuous_bench or multi_source_bench
+        multi_continuous or multi_discrete
     tol_level: int, optional
         tolerance level for inner opt part
     n_splits: int, optional
@@ -490,7 +463,7 @@ class RealBenchmark():
                 diabetes, breast_cancer, leukemia, rcv1, news20
             mf_opt : str, optional
                 name of a multi-fidelity framework
-                multi_continuous_bench or multi_source_bench
+                multi_continuous or multi_discrete
             tol_level: int, optional
                 tolerance level for inner opt part
             n_splits: int, optional
@@ -524,13 +497,13 @@ class RealBenchmark():
         self.mf = 2
 
         if mf_opt is not None:
-            if mf_opt == 'multi_continuous_bench':
+            if mf_opt == 'multi_continuous':
                 self.mf = 0
-            elif mf_opt == 'multi_source_bench':
+            elif mf_opt == 'multi_discrete':
                 self.mf = 1
             else:
                 raise ValueError(
-                    "Please select one of two mf options multi_continuous_bench or multi_source_bench.")
+                    "Please select one of two mf options multi_continuous or multi_discrete.")
 
         self.n_features = X.shape[1]
         self.n_splits = n_splits
@@ -591,7 +564,7 @@ class RealBenchmark():
         input_config : array size of n_features
         index_fidelity : int, optional
             If mf_opt is selected, then selecting which fidelity to evaluate. (default is None)
-            For multi_source_bench, index_fidelity is a dicreate par between 0 and 5.
+            For multi_discrete, index_fidelity is a dicreate par between 0 and 5.
 
         Returns
         -------
@@ -599,7 +572,8 @@ class RealBenchmark():
         """
 
         if self.mf == 1:
-            tol_range = np.geomspace(self.tol_level, 0.2, num=5)
+            # tol_range = np.geomspace(self.tol_level, 0.2, num=5)
+            tol_range = np.array([0.2, 0.1, 1e-2, 1e-3, 1e-4])
             tol_budget = tol_range[index_fidelity]
         elif self.mf == 0:
             min_tol = -np.log(0.2)
@@ -608,7 +582,7 @@ class RealBenchmark():
             tol_budget = np.exp(-tol_res)
         else:
             raise ValueError(
-                "Please select one of two mf options multi_continuous_bench or multi_source_bench.")
+                "Please select one of two mf options multi_continuous or multi_discrete.")
 
         scaled_x = self.scale_domain(input_config)
 

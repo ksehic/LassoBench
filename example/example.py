@@ -16,7 +16,7 @@ import LassoBench
 if __name__ == '__main__':
 
     # prepare benchmark
-    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple3', noise=True)
+    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple', noise=True)
     d = synt_bench.n_features
 
     # generate random config within [-1, 1]
