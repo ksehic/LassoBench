@@ -75,11 +75,11 @@ loss = real_bench_mf.fidelity_evaluate(random_config, index_fidelity=fidelity_pi
 ## List of real world benchmarks
 | Name         | Dimensionality | Approx. Axis-aligned Subspace |
 | :---         |     :---:      |          ---:         |
-| breast_cancer | 10 | 683 | 3 |
-| diabetes | 8 | 768 | 5 |
-| leukemia | 7 129 | 38 | 22 |
-| dna | 180 | 2 000 | 43 |
-| rcv1 | 19 959 | 20 242 | 75 |
+| breast_cancer | 10 | 3 |
+| diabetes | 8 | 5 |
+| leukemia | 7 129 | 22 |
+| dna | 180 | 43 |
+| rcv1 | 19 959 | 75 |
 
 ## Cite
 
