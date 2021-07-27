@@ -37,12 +37,10 @@ class SyntheticBenchmark():
     ----------
     pick_bench : str
         name of a predefined bench such as
-        synt_simple3
-        synt_simple6
-        synt_medium5
-        synt_medium10
-        synt_high15
-        synt_high30
+        synt_simple
+        synt_medium
+        synt_high
+        synt_hard
     noise : str, optional
         increasing the noise level for the predefined bench
     mf_opt : str, optional
@@ -96,12 +94,10 @@ class SyntheticBenchmark():
         ----------
             pick_bench : str
                 name of a predefined bench such as
-                synt_simple3
-                synt_simple6
-                synt_medium5
-                synt_medium10
-                synt_high15
-                synt_high30
+                synt_simple
+                synt_medium
+                synt_high
+                synt_hard
             noise : str, optional
                 increasing the noise level for the predefined bench (default: False)
             mf_opt : str, optional
@@ -157,7 +153,7 @@ class SyntheticBenchmark():
                 w_true = np.zeros(n_features)
                 size_supp = 15
                 w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
-            elif pick_bench == 'synt_hard50':
+            elif pick_bench == 'synt_hard':
                 n_features = 1000
                 n_samples = 500
                 corr_level = 0.6
