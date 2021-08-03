@@ -226,6 +226,10 @@ class SyntheticBenchmark():
         -------
         Cross-validation Loss divided by oracle. The goal is to be close or less than 1.
         """
+        if np.any(input_config < -1) or np.any(input_config > 1):
+            raise ValueError(
+                "The configuration is outside the bounds.")
+
         scaled_x = self.scale_domain(input_config)
 
         estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
@@ -292,11 +296,17 @@ class SyntheticBenchmark():
         -------
         MSPE divided by oracle and Fscore
         """
+
+        if np.any(input_config < -1) or np.any(input_config > 1):
+            raise ValueError(
+                "The configuration is outside the bounds.")
+
+
         scaled_x = self.scale_domain(input_config)
         estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
         estimator.weights = np.exp(scaled_x)
         estimator.fit(self.X_train, self.y_train)
-        # reg_coef = estimator.coef_
+        self.reg_coef = estimator.coef_
         coef_hpo_support = np.abs(estimator.coef_) > self.eps_support
         fscore = f1_score(self.coef_true_support, coef_hpo_support)
         mspe = mean_squared_error(estimator.predict(self.X_test), self.y_test)
@@ -538,6 +548,12 @@ class RealBenchmark():
         -------
         Cross-validation Loss
         """
+
+        if np.any(input_config < -1) or np.any(input_config > 1):
+            raise ValueError(
+                "The configuration is outside the bounds.")
+
+
         scaled_x = self.scale_domain(input_config)
 
         estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
@@ -605,10 +621,15 @@ class RealBenchmark():
         -------
         MSPE
         """
+        if np.any(input_config < -1) or np.any(input_config > 1):
+            raise ValueError(
+                "The configuration is outside the bounds.")
+
         scaled_x = self.scale_domain(input_config)
         estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
         estimator.weights = np.exp(scaled_x)
         estimator.fit(self.X_train, self.y_train)
+        self.reg_coef = estimator.coef_
         mspe = mean_squared_error(estimator.predict(self.X_test), self.y_test)
 
         return mspe
