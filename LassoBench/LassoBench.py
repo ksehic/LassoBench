@@ -418,6 +418,8 @@ class SyntheticBenchmark():
             coef_sho_support = np.abs(estimator.coef_) > self.eps_support
             fscore[i] = f1_score(self.coef_true_support, coef_sho_support)
 
+        self.reg_coef = reg_coef
+
         return monitor.objs/self.loss_oracle, mspe/self.mspe_oracle, fscore, monitor.times
 
 
@@ -731,5 +733,7 @@ class RealBenchmark():
             estimator.fit(self.X_train, self.y_train)
             mspe[i] = mean_squared_error(estimator.predict(self.X_test), self.y_test)
             reg_coef[i, :] = estimator.coef_
+
+        self.reg_coef = reg_coef
 
         return monitor.objs, mspe, monitor.times
