@@ -402,7 +402,7 @@ class SyntheticBenchmark():
         else:
             grad_search(
                 algo, criterion, model, optimizer, self.X_train, self.y_train,
-                init_point_scale, monitor)
+                np.exp(init_point_scale), monitor)
 
         mspe = np.empty((n_steps,))
         fscore = np.empty((n_steps,))
