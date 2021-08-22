@@ -721,7 +721,7 @@ class RealBenchmark():
         else:
             grad_search(
                 algo, criterion, model, optimizer, self.X_train, self.y_train,
-                init_point_scale, monitor)
+                np.exp(init_point_scale), monitor)
 
         mspe = np.empty((n_steps,))
         config_all = np.empty((n_steps, self.n_features))
