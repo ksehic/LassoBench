@@ -1,6 +1,6 @@
 # LassoBench
 
-LassoBench is a library for high-dimensional hyperparameter optimization benchmarks based on Weighted LASSO regression.
+LassoBench is a library for high-dimensional hyperparameter optimization benchmarks based on Weighted Lasso regression.
 
 **Note:** LassoBench is under active construction. Follow for more benchmarks soon.
 
@@ -21,7 +21,9 @@ the least-squares estimation and the penalty term that promotes the sparsity.
 The ambient space bounds are defined between [-1, 1].
 
 LassoBench comes with two classes `SyntheticBenchmark` and `RealBenchmark`. While `RealBenchmark` is
-based on real-world applications found in medicine and finance, `SyntheticBenchmark` covers synthetic well-defined conditions. Each benchmark comes with `.evaluate` that is used to evaluate the objective function, `.test` that provides the post-processing metrics MSPE and the F-score and the argument `mf_opt` to define the multi-source framework that is evaluated via `.fidelity_evaluate`.
+based on real-world applications found in medicine and finance, `SyntheticBenchmark` covers synthetic well-defined conditions. 
+
+Each benchmark comes with `.evaluate` that is used to evaluate the objective function, `.test` that provides the post-processing metrics MSPE and the F-score and the argument `mf_opt` to define the multi-source framework that is evaluated via `.fidelity_evaluate`.
 
 The results are compared with the baselines LassoCV (`.run_LASSOCV`), AdaptiveLassoCV (to be implemented soon) and Sparse-HO (`.run_sparseho`).
 

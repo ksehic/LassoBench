@@ -1,7 +1,7 @@
 #!/usr/bin/python
 """
 ==================================================
-LASSOBench
+LassoBench
 High-Dimensional Hyperparameter
 Optimization Benchmark
 Contact: kenan.sehic@cs.lth.se
