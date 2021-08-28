@@ -491,7 +491,8 @@ class RealBenchmark():
             X, y = fetch_libsvm('breast-cancer_scale')
             alpha_scale = 1e5
         elif pick_data == 'leukemia':
-            X, y = fetch_libsvm(pick_data)
+            self.X_train, self.y_train = fetch_libsvm(pick_data)
+            self.X_test, self.y_test = fetch_libsvm('leukemia_test')
             alpha_scale = 1e5
         elif pick_data == 'rcv1':
             X, y = fetch_libsvm('rcv1.binary')
@@ -518,8 +519,9 @@ class RealBenchmark():
         # self.XX = X
 
         # split train and test
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
-            X, y, test_size=test_size, random_state=seed)
+        if pick_data is not 'leukemia':
+            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+                X, y, test_size=test_size, random_state=seed)
 
         self.kf = KFold(shuffle=True, n_splits=n_splits, random_state=seed)
 
