@@ -102,7 +102,7 @@ class SyntheticBenchmark():
                 increasing the noise level for the predefined bench (default: False)
             mf_opt : str, optional
                 name of a multi-fidelity framework
-                multi_continuous or multi_discrete
+                continuous_fidelity or discrete_fidelity
             n_features : int, optional
                 number of features in design matrix i.e. the dimension of search space
             n_samples : int, optional
@@ -167,13 +167,13 @@ class SyntheticBenchmark():
         self.mf = 2
 
         if mf_opt is not None:
-            if mf_opt == 'multi_continuous':
+            if mf_opt == 'continuous_fidelity':
                 self.mf = 0
-            elif mf_opt == 'multi_discrete':
+            elif mf_opt == 'discrete_fidelity':
                 self.mf = 1
             else:
                 raise ValueError(
-                    "Please select one of two mf options multi_continuous or multi_discrete.")
+                    "Please select one of two mf options continuous_fidelity or discrete_fidelity.")
 
         self.tol_level = tol_level
         self.n_features = n_features
@@ -269,7 +269,7 @@ class SyntheticBenchmark():
             tol_budget = np.exp(-tol_res)
         else:
             raise ValueError(
-                "Please select one of two mf options multi_continuous or multi_discrete.")
+                "Please select one of two mf options continuous_fidelity or discrete_fidelity.")
 
         scaled_x = self.scale_domain(input_config)
 
@@ -300,7 +300,6 @@ class SyntheticBenchmark():
         if np.any(input_config < -1) or np.any(input_config > 1):
             raise ValueError(
                 "The configuration is outside the bounds.")
-
 
         scaled_x = self.scale_domain(input_config)
         estimator = Lasso(fit_intercept=False, max_iter=100, warm_start=False)
@@ -437,7 +436,7 @@ class RealBenchmark():
         diabetes, breast_cancer, leukemia, rcv1, news20
     mf_opt : str, optional
         name of a multi-fidelity framework
-        multi_continuous or multi_discrete
+        continuous_fidelity or discrete_fidelity
     tol_level: int, optional
         tolerance level for inner opt part
     n_splits: int, optional
@@ -471,7 +470,7 @@ class RealBenchmark():
                 diabetes, breast_cancer, leukemia, rcv1, news20
             mf_opt : str, optional
                 name of a multi-fidelity framework
-                multi_continuous or multi_discrete
+                continuous_fidelity or discrete_fidelity
             tol_level: int, optional
                 tolerance level for inner opt part
             n_splits: int, optional
@@ -506,13 +505,13 @@ class RealBenchmark():
         self.mf = 2
 
         if mf_opt is not None:
-            if mf_opt == 'multi_continuous':
+            if mf_opt == 'continuous_fidelity':
                 self.mf = 0
-            elif mf_opt == 'multi_discrete':
+            elif mf_opt == 'discrete_fidelity':
                 self.mf = 1
             else:
                 raise ValueError(
-                    "Please select one of two mf options multi_continuous or multi_discrete.")
+                    "Please select one of two mf options continuous or discrete_fidelity.")
 
         self.n_features = X.shape[1]
         self.n_splits = n_splits
@@ -598,7 +597,7 @@ class RealBenchmark():
             tol_budget = np.exp(-tol_res)
         else:
             raise ValueError(
-                "Please select one of two mf options multi_continuous or multi_discrete.")
+                "Please select one of two mf options continuous_fidelity or discrete_fidelity.")
 
         scaled_x = self.scale_domain(input_config)
 

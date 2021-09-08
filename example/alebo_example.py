@@ -98,14 +98,9 @@ if __name__ == '__main__':
 
     loss_alebo = np.empty((n_total, n_repeat))
     time_alebo = np.empty((n_total, n_repeat))
-    mspe_alebo = np.empty((n_total, n_repeat))
-    fscore_alebo = np.empty((n_total, n_repeat))
 
     for i in range(n_repeat):
         loss_alebo[:, i] = par_res[i][0]
         time_alebo[:, i] = par_res[i][1]
-        for j in range(n_total):
-            config = par_res[i][2]
-            mspe_alebo[j, i], fscore_alebo[j, i] = synt_bench.test(input_config=config[j, :])
 
     # END

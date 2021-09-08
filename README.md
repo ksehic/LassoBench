@@ -21,9 +21,9 @@ the least-squares estimation and the penalty term that promotes the sparsity.
 The ambient space bounds are defined between [-1, 1].
 
 LassoBench comes with two classes `SyntheticBenchmark` and `RealBenchmark`. While `RealBenchmark` is
-based on real-world applications found in medicine and finance, `SyntheticBenchmark` covers synthetic well-defined conditions. 
+based on real-world applications found in medicine and finance, `SyntheticBenchmark` covers synthetic well-defined conditions. The user can select one of the predefined synthetic benchmarks or create a different bechmark.
 
-Each benchmark comes with `.evaluate` that is used to evaluate the objective function, `.test` that provides the post-processing metrics MSPE and the F-score and the argument `mf_opt` to define the multi-source framework that is evaluated via `.fidelity_evaluate`.
+Each benchmark comes with `.evaluate` that is used to evaluate the objective function, `.test` that provides the post-processing metrics MSPE and the F-score and the argument `mf_opt` to define the multi-fidelity framework that is evaluated via `.fidelity_evaluate`.
 
 The results are compared with the baselines LassoCV (`.run_LASSOCV`), AdaptiveLassoCV (to be implemented soon) and Sparse-HO (`.run_sparseho`).
 
@@ -40,6 +40,10 @@ Please refer to the reference for more details.
     │   ├── hesbo_lib.pu            # HesBO library
     │
     └── ...
+
+## License
+
+LassoBench is distributed under the MIT license. More information on the license can be found [here](https://github.com/ksehic/LassoBench/blob/main/LICENSE)
 
 ## Simple [synthetic](#list-of-synthetic-benchmarks) bench code
 ```python
@@ -59,11 +63,11 @@ d = real_bench.n_features
 random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
 loss = real_bench.evaluate(random_config)
 ```
-## Multi-source bench code
+## Multi-information source bench code
 ```python
 import numpy as np
 import LassoBench
-real_bench_mf = LassoBench.RealBenchmark(pick_data='rcv1', mf_opt='multi_discrete')
+real_bench_mf = LassoBench.RealBenchmark(pick_data='rcv1', mf_opt='discrete_fidelity')
 d = real_bench_mf.n_features
 random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
 fidelity_pick = 0
@@ -87,4 +91,10 @@ loss = real_bench_mf.fidelity_evaluate(random_config, index_fidelity=fidelity_pi
 
 ## Cite
 
-If you use this code, please cite: TBD
+If you use this code, please cite:
+
+```
+
+Šehić Kenan, Gramfort Alexandre, Salmon Joseph and Nardi Luigi. "LassoBench: A High-Dimensional Hyperparameter Optimization Benchmark Suite for Lasso", TBD, 2021.
+
+```

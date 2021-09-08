@@ -18,8 +18,10 @@ import timeit
 
 # define synt bench
 # synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_high')
-real_bench = LassoBench.RealBenchmark(pick_data='rcv1')
 # d = synt_bench.n_features
+
+# define real bench
+real_bench = LassoBench.RealBenchmark(pick_data='rcv1')
 d = real_bench.n_features
 
 
@@ -78,49 +80,28 @@ def run_hesbo(eff_dim, n_doe, n_total, ARD=True, n_repeat=0, n_seed=42, n_jobs=1
 
         loss = np.empty((n_total, n_repeat))
         elapsed = np.empty((n_total, n_repeat))
-        mspe_hesbo = np.empty((n_total, n_repeat))
-        fscore = np.empty((n_total, n_repeat))
-        config_all = np.empty((n_total, d, n_repeat))
-
         for i in range(n_repeat):
             loss[:, i] = np.squeeze(par_res[i][1])
             elapsed[:, i] = np.squeeze(par_res[i][0])
-            config_par = par_res[i][2]
-            for j in range(n_total):
-                # mspe_hesbo[j, i], fscore[j, i] = synt_bench.test(input_config=config_par[j, :])
-                mspe_hesbo[j, i] = real_bench.test(input_config=config_par[j, :])
     else:
         if n_repeat > 1:
             random_seeds = np.random.randint(200000000, size=n_repeat)
             loss = np.empty((n_total, n_repeat))
             elapsed = np.empty((n_total, n_repeat))
-            mspe_hesbo = np.empty((n_total, n_repeat))
-            fscore = np.empty((n_total, n_repeat))
-            config_all = np.empty((n_total, d, n_repeat))
 
             for i in range(n_repeat):
-                _, elapsed0, _, loss0, _, config0 = hesbo_run(low_dim=eff_dim, high_dim=d, initial_n=n_doe,
+                _, elapsed0, _, loss0, _, _ = hesbo_run(low_dim=eff_dim, high_dim=d, initial_n=n_doe,
                                                               total_itr=n_total - n_doe, test_func=evaluate_hesbo, ARD=ARD,
                                                               n_seed=random_seeds[i])
                 loss[:, i] = loss0[:, 0]
                 elapsed[:, i] = elapsed0[0, :]
-                for j in range(n_total):
-                    # mspe_hesbo[j, i], fscore[j, i] = synt_bench.test(input_config=config0[j, :])
-                    mspe_hesbo[j, i] = real_bench.test(input_config=config0[j, :])
         else:
-            _, elapsed, _, loss, _, config = hesbo_run(
+            _, elapsed, _, loss, _, _ = hesbo_run(
                 low_dim=eff_dim, high_dim=d, initial_n=n_doe,
                 total_itr=n_total - n_doe, test_func=evaluate_hesbo,
                 ARD=ARD, n_seed=n_seed)
-            mspe_hesbo = np.empty((n_total,))
-            fscore = np.empty((n_total,))
-            config_all = np.empty((n_total, d))
-            for i in range(n_total):
-                # mspe_hesbo[j, i], fscore[j, i] = synt_bench.test(input_config=config[i, :])
-                mspe_hesbo[j, i] = real_bench.test(input_config=config[i, :])
 
-    # return -loss, mspe_hesbo, fscore, elapsed
-    return -loss, mspe_hesbo, elapsed
+    return -loss, elapsed
 
 
 if __name__ == '__main__':
@@ -132,7 +113,6 @@ if __name__ == '__main__':
     n_repeat = 30
 
     loss_hesbo_n = []
-    mspe_hesbo_n = []
     time_hesbo_n = []
 
     for i in range(4):
@@ -142,16 +122,11 @@ if __name__ == '__main__':
         # run Hesbo parallel on synt
         initial_desing = de + 1
 
-        # loss_hesbo, mspe_hesbo, fscore_hesbo, time_hesbo = run_hesbo(
-        #     eff_dim=eff_dim, n_doe=initial_desing, n_total=total_steps, ARD=True,
-        #     n_repeat=n_repeat, n_seed=42, n_jobs=n_jobs)
-
-        loss_hesbo, mspe_hesbo, time_hesbo = run_hesbo(
+        loss_hesbo, time_hesbo = run_hesbo(
             eff_dim=de, n_doe=initial_desing, n_total=total_steps, ARD=True,
             n_repeat=n_repeat, n_seed=42, n_jobs=n_jobs)
 
         loss_hesbo_n.append(loss_hesbo)
-        mspe_hesbo_n.append(mspe_hesbo)
         time_hesbo_n.append(time_hesbo)
 
     # END

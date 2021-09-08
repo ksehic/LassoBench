@@ -15,9 +15,13 @@ import LassoBench
 
 if __name__ == '__main__':
 
-    # prepare benchmark
-    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple', noise=True)
+    # prepare noiseless benchmark
+    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple')
     d = synt_bench.n_features
+
+    # prepare noisy benchmark
+    synt_bench_noisy = LassoBench.SyntheticBenchmark(pick_bench='synt_simple', noise=True)
+    d = synt_bench_noisy.n_features
 
     # generate random config within [-1, 1]
     N = 1000
@@ -25,24 +29,30 @@ if __name__ == '__main__':
     # numpy array
     random_config = np.random.uniform(low=-1.0, high=1.0, size=(N, d))
 
-    # Each config is tested for MSPE and Fscore, while HPO is done on loss
+    # The objective function for a HPO Algorithm
     loss = np.empty((N,))
-    mspe = np.empty((N,))   # MSPE divided by the oracle meaning 1 or less is great
-    fscore = np.empty((N,))  # between 0 and 1. 1 is the best
+    loss_noisy = np.empty((N,))
 
     for i in tqdm(range(N), ascii=True,
                 desc='New config'):
         loss[i] = synt_bench.evaluate(random_config[i, :])
-        mspe[i], fscore[i] = synt_bench.test(random_config[i, :])
+        loss_noisy[i] = synt_bench_noisy.evaluate(random_config[i, :])
 
     # run lassocv
-    loss_lcv, mspe_lcv, fscore_lcv, time_lcv = synt_bench.run_LASSOCV()
+    loss_lcv, _, _, time_lcv = synt_bench.run_LASSOCV()
+    loss_lcv_noisy, _, _, time_lcv_noisy = synt_bench_noisy.run_LASSOCV()
 
     # run sparse-ho
-    loss_sho, mspe_sho, fscore_sho, time_sho = synt_bench.run_sparseho(n_steps=30)
+    loss_sho, _, _, time_sho = synt_bench.run_sparseho(n_steps=30)
+    loss_sho_noisy, _, _, time_sho_noisy = synt_bench_noisy.run_sparseho(n_steps=30)
 
-    # define real world and run on cheap fidelity
-    real_bench = LassoBench.RealBenchmark(pick_data='rcv1', mf_opt='multi_source_bench')
+    # For each config, we can measure MSE on the test data 
+    # and additionally the F-score but only for a synth bench via .test
+    random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
+    mse_test, fscore = synt_bench.test(random_config)
+
+    # define real world bench and run on the cheapest fidelity l=0
+    real_bench = LassoBench.RealBenchmark(pick_data='rcv1', mf_opt='discrete_fidelity')
     d = real_bench.n_features
 
     # random config
@@ -56,5 +66,8 @@ if __name__ == '__main__':
                 desc='New config'):
         loss_cheap[i] = real_bench.fidelity_evaluate(
             random_config[i, :], index_fidelity=fidelity_pick)
+
+    # MSE on the test data
+    mse_test = real_bench.test(random_config[0, :])
 
     # END
