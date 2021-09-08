@@ -518,7 +518,7 @@ class RealBenchmark():
         # self.XX = X
 
         # split train and test
-        if pick_data is not 'leukemia':
+        if pick_data != 'leukemia':
             self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
                 X, y, test_size=test_size, random_state=seed)
 
