@@ -513,14 +513,13 @@ class RealBenchmark():
                 raise ValueError(
                     "Please select one of two mf options continuous or discrete_fidelity.")
 
-        self.n_features = X.shape[1]
-        self.n_splits = n_splits
-        # self.XX = X
-
         # split train and test
+        self.n_splits = n_splits
         if pick_data != 'leukemia':
             self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
                 X, y, test_size=test_size, random_state=seed)
+
+        self.n_features = self.X_train.shape[1]
 
         self.kf = KFold(shuffle=True, n_splits=n_splits, random_state=seed)
 
