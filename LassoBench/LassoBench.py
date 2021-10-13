@@ -331,7 +331,7 @@ class SyntheticBenchmark():
         alphas = np.geomspace(self.alpha_max, self.alpha_min, n_alphas)
 
         lasso_params = dict(fit_intercept=False, tol=self.tol_level,
-                            normalize=False, cv=self.kf, n_jobs=self.n_splits)
+                            cv=self.kf, n_jobs=self.n_splits)
 
         # run LassoCV celer
         t0 = timeit.default_timer()
@@ -654,7 +654,7 @@ class RealBenchmark():
         alphas = np.geomspace(self.alpha_max, self.alpha_min, n_alphas)
 
         lasso_params = dict(fit_intercept=False, tol=self.tol_level,
-                            normalize=False, cv=self.kf, n_jobs=self.n_splits)
+                            cv=self.kf, n_jobs=self.n_splits)
 
         # run LassoCV celer
         t0 = timeit.default_timer()
