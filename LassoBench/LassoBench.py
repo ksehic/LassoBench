@@ -680,7 +680,9 @@ class RealBenchmark():
         grad_solver : str, optional
             Selecting which gradient solver to use gradient descent 'gd', 'adam' or 'line' as line search (default is gd)
         algo_pick   : str, optional
-            Selecting which diff solver to use imp_forw or imp (default is imp_forw)
+            Selecting which diff solver to use imp_forw or imp (default is imp_forw).
+            If Sparse-HO generates nan for a real-world bench such as 'rcv1',
+            change the default algo_pick to 'imp'.
         n_steps     : int, optional
             Number of optimization steps (default is 10)
         init_point  : array, optional
