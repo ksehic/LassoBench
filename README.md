@@ -21,7 +21,7 @@ the least-squares estimation and the penalty term that promotes the sparsity.
 The ambient space bounds are defined between [-1, 1].
 
 LassoBench comes with two classes `SyntheticBenchmark` and `RealBenchmark`. While `RealBenchmark` is
-based on real-world applications found in medicine and finance, `SyntheticBenchmark` covers synthetic well-defined conditions. The user can select one of the predefined synthetic benchmarks or create a different bechmark.
+based on real-world applications found in medicine and finance, `SyntheticBenchmark` covers synthetic well-defined conditions. The user can select one of the predefined synthetic benchmarks or create a different bechmark. For the synthetic benchmarks, the default condition for the noise level is noiseless (noise=False).
 
 Each benchmark comes with `.evaluate` that is used to evaluate the objective function, `.test` that provides the post-processing metrics (such as MSE on the test data and the F-score for synt benchs) and the argument `mf_opt` to define the multi-fidelity framework that is evaluated via `.fidelity_evaluate`.
 
@@ -45,11 +45,20 @@ Please refer to the reference for more details.
 
 LassoBench is distributed under the MIT license. More information on the license can be found [here](https://github.com/ksehic/LassoBench/blob/main/LICENSE)
 
-## Simple [synthetic](#list-of-synthetic-benchmarks) bench code
+## Simple noiseless [synthetic](#list-of-synthetic-benchmarks) bench code
 ```python
 import numpy as np
 import LassoBench
 synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple')
+d = synt_bench.n_features
+random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
+loss = synt_bench.evaluate(random_config)
+```
+## Simple noisy [synthetic](#list-of-synthetic-benchmarks) bench code
+```python
+import numpy as np
+import LassoBench
+synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple', noise=True)
 d = synt_bench.n_features
 random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
 loss = synt_bench.evaluate(random_config)
