@@ -80,16 +80,18 @@ def run_alebo(low_d, n_doe, n_total, bench):
 
 
 if __name__ == '__main__':
+
     # define synt bench
-    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple')
+    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_hard')
     d = synt_bench.n_features
 
-    # run ALEBO
-    de = 10
-    n_doe = 20
-    n_total = 60
-    n_repeat = 5
+    # ALEBO selected arguments
+    de = 50
+    n_doe = de + 1
+    n_total = 100
+    n_repeat = 30
 
+    # run ALEBO
     fun_alebo = run_alebo(low_d=de, n_doe=n_doe, n_total=n_total, bench=synt_bench)
     random_seeds = np.random.randint(200, size=n_repeat)
     num_cores = multiprocessing.cpu_count()

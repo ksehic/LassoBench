@@ -25,16 +25,18 @@ based on real-world applications found in medicine and finance, `SyntheticBenchm
 
 Each benchmark comes with `.evaluate` that is used to evaluate the objective function, `.test` that provides the post-processing metrics (such as MSE on the test data and the F-score for synt benchs) and the argument `mf_opt` to define the multi-fidelity framework that is evaluated via `.fidelity_evaluate`.
 
-The results are compared with the baselines LassoCV (`.run_LASSOCV`), AdaptiveLassoCV (to be implemented soon) and Sparse-HO (`.run_sparseho`).
+The results are compared with the baselines LassoCV (`.run_LASSOCV`), AdaptiveLassoCV (to be implemented soon until then refer to the branch "adaptivelassocv" in https://github.com/mathurinm/celer) and Sparse-HO (`.run_sparseho`).
 
-Simple experiments are provided in `example.py`. In `hesbo_example.py` and `alebo_example.py`, we demostrate how to use `LassoBench` with some well-known HPO algorithms for high-dimensional problems.
+Simple experiments are provided in `example.py` where you can ran random search on different benchmarks. In addition, you can see how to run the baselines LassoCV and Sparse-HO. In `hesbo_example.py`, `cma_example.py`, `turbo_example.py` and `alebo_example.py`, we demostrate how to use `LassoBench` with some well-known HPO algorithms for high-dimensional problems. Please refer to the docstrings for more details. You would need to install CMA-ES (python -m pip install cma) and TuRBO (https://github.com/uber-research/TuRBO).
 
-Please refer to the reference for more details. 
+Please refer to the reference for more details.
 
     .
     ├── ...
     ├── example                    # Examples how to use LassoBench for HDBO algorithms
     │   ├── alebo_example.py       # ALEBO applied on synt bench
+    │   ├── cma__example.py       # CMA-ES applied on synt bench
+    │   ├── turbo_example.py       # TuRBO applied on synt bench
     │   ├── example.py             # Simple cases how to run with synt, real, and multifidelity benchs
     │   ├── hesbo_example.py        # HesBO applied on synt and real bench
     │   ├── hesbo_lib.pu            # HesBO library

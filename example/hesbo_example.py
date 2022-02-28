@@ -16,13 +16,19 @@ from hesbo_lib import RunMain as hesbo_run
 from joblib import Parallel, delayed
 import timeit
 
-# define synt bench
-# synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_high')
-# d = synt_bench.n_features
+import multiprocessing
 
-# define real bench
-real_bench = LassoBench.RealBenchmark(pick_data='rcv1')
-d = real_bench.n_features
+# select benchmark
+pick_bench = 'rcv1'
+
+if pick_bench == 'synt_hard':
+    # define synt bench with 1000 features
+    synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_high')
+    d = synt_bench.n_features
+elif pick_bench == 'rcv1':
+    # define real bench
+    real_bench = LassoBench.RealBenchmark(pick_data='rcv1')
+    d = real_bench.n_features
 
 
 # prepare objective function
@@ -106,10 +112,9 @@ def run_hesbo(eff_dim, n_doe, n_total, ARD=True, n_repeat=0, n_seed=42, n_jobs=1
 
 if __name__ == '__main__':
 
-    import multiprocessing
     n_jobs = multiprocessing.cpu_count()
     total_steps = 1000
-    eff_dim = np.array([2, 5, 10, 20])
+    d_low = np.array([2, 5, 10, 20])
     n_repeat = 30
 
     loss_hesbo_n = []
@@ -117,7 +122,7 @@ if __name__ == '__main__':
 
     for i in range(4):
 
-        de = eff_dim[i]
+        de = d_low[i]
 
         # run Hesbo parallel on synt
         initial_desing = de + 1
