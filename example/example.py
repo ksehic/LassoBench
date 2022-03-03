@@ -7,7 +7,8 @@ Optimization Benchmark
 Contact: kenan.sehic@cs.lth.se
 
 Tutorial: Random search on different benchmarks
-          Run baselines
+          Run LassoCV, Sparse-HO and Multi-start Sparse-HO
+          Test multi-fidelity approach
 =================================================
 """
 import numpy as np
@@ -45,6 +46,26 @@ loss_lcv_noisy, _, _, time_lcv_noisy = synt_bench_noisy.run_LASSOCV()
 # run sparse-ho
 loss_sho, _, _, time_sho = synt_bench.run_sparseho(n_steps=30)
 loss_sho_noisy, _, _, time_sho_noisy = synt_bench_noisy.run_sparseho(n_steps=30)
+
+# run multi-start sparse-ho for random configurations
+n_starts = 10
+loss_msho = []
+time_msho = []
+loss_msho_noisy = []
+time_msho_noisy = []
+
+for i in range(n_starts):
+        if i == 0 :
+                loss_sho0, _, _, time_sho0 = synt_bench.run_sparseho(n_steps=20)
+                loss_sho_noisy0, _, _, time_sho_noisy0 = synt_bench_noisy.run_sparseho(n_steps=20)
+        else:
+                lambda_random = np.random.uniform(low=-1.0, high=1.0)
+                loss_sho0, _, _, time_sho0 = synt_bench.run_sparseho(
+                        n_steps=20, init_point=np.ones((d,))*lambda_random)
+                loss_sho_noisy0, _, _, time_sho_noisy0 = synt_bench_noisy.run_sparseho(
+                        n_steps=20, init_point=np.ones((d,))*lambda_random)
+        loss_msho.append(loss_sho0)
+        loss_msho_noisy.append(loss_sho_noisy0)
 
 # For each config, we can measure MSE on the test data
 # and additionally the F-score but only for a synth bench via .test
