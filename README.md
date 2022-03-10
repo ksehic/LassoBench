@@ -2,9 +2,7 @@
 
 LassoBench is a library for high-dimensional hyperparameter optimization benchmarks based on Weighted Lasso regression.
 
-**Note:** LassoBench is under active construction. Follow for more benchmarks soon.
-
-## Install and work with the development version
+## Install the development version
 
 From a console or terminal clone the repository and install LassoBench:
 
@@ -15,10 +13,10 @@ From a console or terminal clone the repository and install LassoBench:
     pip install -e .
 
 ## Overview
-The objective is to optimize the multi-dimensional hyperparameter that balances
+The objective is to optimize the multi-dimensional hyperparameter space that balances
 the least-squares estimation and the penalty term that promotes the sparsity.
 
-The ambient space bounds are defined between [-1, 1].
+The search space bounds are defined between [-1, 1].
 
 LassoBench comes with two classes `SyntheticBenchmark` and `RealBenchmark`. While `RealBenchmark` is
 based on real-world applications found in medicine and finance, `SyntheticBenchmark` covers synthetic well-defined conditions. The user can select one of the predefined synthetic benchmarks or create a different bechmark. For the synthetic benchmarks, the default condition for the noise level is noiseless (noise=False).
@@ -106,6 +104,6 @@ If you use this code, please cite:
 
 ```
 
-Šehić Kenan, Gramfort Alexandre, Salmon Joseph and Nardi Luigi. "LassoBench: A High-Dimensional Hyperparameter Optimization Benchmark Suite for Lasso", TBD, 2021.
+Šehić Kenan, Gramfort Alexandre, Salmon Joseph and Nardi Luigi, "LassoBench: A High-Dimensional Hyperparameter Optimization Benchmark Suite for Lasso", under review, 2022.
 
 ```
