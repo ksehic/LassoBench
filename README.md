@@ -37,18 +37,6 @@ LassoBench comes with the baselines commonly found in the Lasso community listed
 ## HPO Methods
 In the folder `~/example`, the user can learn how to use `LassoBench` with some well-known HPO algorithms for high-dimensional problems `hesbo_example.py`, `cma_example.py`, `turbo_example.py` and `alebo_example.py`. Please refer to the docstrings and the table for more details.
 
-   .
-    ├── ...
-    ├── example                    # Examples how to use LassoBench for HDBO algorithms
-    │   ├── alebo_example.py       # ALEBO applied on synt bench
-    │   ├── cma__example.py       # CMA-ES applied on synt bench
-    │   ├── turbo_example.py       # TuRBO applied on synt bench
-    │   ├── example.py             # Simple cases how to run with synt, real, and multifidelity benchs
-    │   ├── hesbo_example.py        # HeSBO applied on synt and real bench
-    │   ├── hesbo_lib.pu            # HeSBO library
-    │
-    └── ...
-
 | HPO Methods          | Install | Description | File |
 | :---          |     :---:      |          ---:         |        ---:         |
 | HeSBO | Check HeSBO lib    | Bayesian Optimization with dimensionality reduction | `hesbo_example.py` |
