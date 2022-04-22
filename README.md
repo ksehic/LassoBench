@@ -23,7 +23,7 @@ based on real-world applications found in medicine and finance, `SyntheticBenchm
 
 Each benchmark comes with `.evaluate` that is used to evaluate the objective function, `.test` that provides the post-processing metrics (such as MSE on the test data and the F-score for synt benchs) and the argument `mf_opt` to define the multi-fidelity framework that is evaluated via `.fidelity_evaluate`.
 
-Simple experiments are provided in `example/example.py` where you can ran random search on different benchmarks.
+Simple experiments are provided in `example/example.py` where you can ran random search on different benchmarks. In the folder `experiments/`, the user can access the results provided in our reference.
 
 ## LassoBench baselines
 LassoBench comes with the baselines commonly found in the Lasso community listed in the table that should be used for the comparison. LassoCV and AdaptiveLassoCV are the Lasso-based baselines where a single hyperparameter is optimized via grid search. The user can change the number of points in the grid following the provided documentation. The default value is 100 points. The implementation of the Lasso-based baselines is derived from Celer. Sparse-HO is a sparse hyperparameter optimizer based on coordinate descent. It can be easily applied to the 1D Lasso problem as well as to the Weighted Lasso problem. The user can change the number of steps, gradient solver, and similar following the provided documentation.
