@@ -467,7 +467,7 @@ class RealBenchmark():
         ----------
             pick_data : str
                 name of dataset such as
-                diabetes, breast_cancer, leukemia, rcv1, news20
+                diabetes, breast_cancer, dna, leukemia, rcv1
             mf_opt : str, optional
                 name of a multi-fidelity framework
                 continuous_fidelity or discrete_fidelity
