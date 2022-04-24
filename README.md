@@ -70,7 +70,7 @@ loss = synt_bench.evaluate(random_config)
 ```python
 import numpy as np
 import LassoBench
-real_bench = LassoBench.RealBenchmark(pick_data='rcv1')
+real_bench = LassoBench.RealBenchmark(pick_data='RCV1')
 d = real_bench.n_features
 random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
 loss = real_bench.evaluate(random_config)
@@ -79,7 +79,7 @@ loss = real_bench.evaluate(random_config)
 ```python
 import numpy as np
 import LassoBench
-real_bench_mf = LassoBench.RealBenchmark(pick_data='rcv1', mf_opt='discrete_fidelity')
+real_bench_mf = LassoBench.RealBenchmark(pick_data='RCV1', mf_opt='discrete_fidelity')
 d = real_bench_mf.n_features
 random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
 fidelity_pick = 0
@@ -95,11 +95,11 @@ loss = real_bench_mf.fidelity_evaluate(random_config, index_fidelity=fidelity_pi
 ## List of real world benchmarks
 | Name         | Dimensionality | Approx. Axis-aligned Subspace |
 | :---         |     :---:      |          ---:         |
-| breast_cancer | 10 | 3 |
-| diabetes | 8 | 5 |
-| leukemia | 7 129 | 22 |
-| dna | 180 | 43 |
-| rcv1 | 19 959 | 75 |
+| Breast_cancer | 10 | 3 |
+| Diabetes | 8 | 5 |
+| Leukemia | 7 129 | 22 |
+| DNA | 180 | 43 |
+| RCV1 | 19 959 | 75 |
 
 ## Cite
 

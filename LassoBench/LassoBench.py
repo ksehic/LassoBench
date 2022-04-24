@@ -132,28 +132,28 @@ class SyntheticBenchmark():
             else:
                 snr_level = 10
 
-            if pick_bench == 'synt_simple':
+            if pick_bench.lower() == 'synt_simple':
                 n_features = 60
                 n_samples = 30
                 corr_level = 0.6
                 w_true = np.zeros(n_features)
                 size_supp = 3
                 w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
-            elif pick_bench == 'synt_medium':
+            elif pick_bench.lower() == 'synt_medium':
                 n_features = 100
                 n_samples = 50
                 corr_level = 0.6
                 w_true = np.zeros(n_features)
                 size_supp = 5
                 w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
-            elif pick_bench == 'synt_high':
+            elif pick_bench.lower() == 'synt_high':
                 n_features = 300
                 n_samples = 150
                 corr_level = 0.6
                 w_true = np.zeros(n_features)
                 size_supp = 15
                 w_true[::n_features // size_supp] = (-1) ** np.arange(size_supp)
-            elif pick_bench == 'synt_hard':
+            elif pick_bench.lower() == 'synt_hard':
                 n_features = 1000
                 n_samples = 500
                 corr_level = 0.6
@@ -467,7 +467,7 @@ class RealBenchmark():
         ----------
             pick_data : str
                 name of dataset such as
-                diabetes, breast_cancer, dna, leukemia, rcv1
+                Diabetes, Breast_cancer, DNA, Leukemia, RCV1
             mf_opt : str, optional
                 name of a multi-fidelity framework
                 continuous_fidelity or discrete_fidelity
@@ -483,20 +483,20 @@ class RealBenchmark():
 
         self.tol_level = tol_level
 
-        if pick_data == 'diabetes':
+        if pick_data.lower() == 'diabetes':
             X, y = fetch_libsvm('diabetes_scale')
             alpha_scale = 1e5
-        elif pick_data == 'breast_cancer':
+        elif pick_data.lower() == 'breast_cancer':
             X, y = fetch_libsvm('breast-cancer_scale')
             alpha_scale = 1e5
-        elif pick_data == 'leukemia':
+        elif pick_data.lower() == 'leukemia':
             self.X_train, self.y_train = fetch_libsvm(pick_data)
             self.X_test, self.y_test = fetch_libsvm('leukemia_test')
             alpha_scale = 1e5
-        elif pick_data == 'rcv1':
+        elif pick_data.lower() == 'rcv1':
             X, y = fetch_libsvm('rcv1.binary')
             alpha_scale = 1e3
-        elif pick_data == 'dna':
+        elif pick_data.lower() == 'dna':
             X, y = fetch_libsvm('dna')
             alpha_scale = 1e5
         else:
