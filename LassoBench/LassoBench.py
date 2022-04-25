@@ -116,7 +116,7 @@ class SyntheticBenchmark():
             tol_level: int, optional
                 tolerance level for inner opt part
             w_true: array, optional
-                custimized true regression coefficients
+                customized true regression coefficients
             n_splits: int, optional
                 number of splits in CV
             test_size: int, optional
@@ -207,7 +207,14 @@ class SyntheticBenchmark():
             self.X_train @ self.w_true, self.y_train)
 
     def scale_domain(self, x):
-        # Scaling the domain
+        """Scaling the input configuration to the original Lasso space
+
+        Args:
+            x (numpy array): the input configuration scaled to [-1, 1]
+
+        Returns:
+           x_copy (numpy array): the original Lasso input configuration
+        """
         x_copy = np.copy(x)
         x_copy = x_copy * (
                 self.log_alpha_max - self.log_alpha_min) / 2 + (
@@ -294,7 +301,7 @@ class SyntheticBenchmark():
 
         Returns
         -------
-        MSPE divided by oracle and Fscore
+        MSPE divided by oracle and Fscore: list
         """
 
         if np.any(input_config < -1) or np.any(input_config > 1):
@@ -311,7 +318,10 @@ class SyntheticBenchmark():
         mspe = mean_squared_error(estimator.predict(self.X_test), self.y_test)
         mspe_div = mspe/self.mspe_oracle
 
-        return mspe_div, fscore
+        return({
+                'mspe': mspe_div,  # scaled loss on test dataset
+                'fscore': fscore  # Fscore for support recovery
+                })
 
     def run_LASSOCV(self, n_alphas=100):
         """
@@ -324,7 +334,7 @@ class SyntheticBenchmark():
 
         Returns
         -------
-        Cross-validation Loss, MSPE divided by oracle, fscore and time elapsed
+        Cross-validation Loss, MSPE divided by oracle, fscore and time elapsed: list
         """
 
         # default number of alphas
@@ -349,7 +359,12 @@ class SyntheticBenchmark():
         coef_lcv_support = np.abs(model_lcv.coef_) > self.eps_support
         fscore = f1_score(self.coef_true_support, coef_lcv_support)
 
-        return loss_lcv/self.loss_oracle, mspe_lcv/self.mspe_oracle, fscore, elapsed
+        return({
+                'val_loss': loss_lcv/self.loss_oracle,  # scaled validation loss
+                'mspe': mspe_lcv/self.mspe_oracle, # scaled loss on test dataset
+                'fscore': fscore,  # Fscore for support recovery
+                'time': elapsed # Time elapsed wall-clock
+                })
 
     def run_sparseho(self, grad_solver='gd', algo_pick='imp_forw', n_steps=10, init_point=None):
         """
@@ -368,7 +383,7 @@ class SyntheticBenchmark():
 
         Returns
         -------
-        Cross-validation loss, MSPE divided by oracle, fscore and time elapsed
+        Cross-validation loss, MSPE divided by oracle, fscore and time elapsed: list
         """
 
         if init_point is not None:
@@ -419,9 +434,12 @@ class SyntheticBenchmark():
 
         self.reg_coef = reg_coef
 
-        return monitor.objs/self.loss_oracle, mspe/self.mspe_oracle, fscore, monitor.times
-
-
+        return({
+                'val_loss': monitor.objs/self.loss_oracle,  # scaled validation loss
+                'mspe': mspe/self.mspe_oracle, # scaled loss on test dataset
+                'fscore': fscore,  # Fscore for support recovery
+                'time': monitor.times # Time elapsed wall-clock
+                })
 
 class RealBenchmark():
     """
@@ -531,7 +549,14 @@ class RealBenchmark():
         self.log_alpha_max = np.log(self.alpha_max)
 
     def scale_domain(self, x):
-        # Scaling the domain
+        """Scaling the input configuration to the original Lasso space
+
+        Args:
+            x (numpy array): the input configuration scaled to [-1, 1]
+
+        Returns:
+           x_copy (numpy array): the original Lasso input configuration
+        """
         x_copy = np.copy(x)
         x_copy = x_copy * (
                 self.log_alpha_max - self.log_alpha_min) / 2 + (
@@ -634,7 +659,9 @@ class RealBenchmark():
         self.reg_coef = estimator.coef_
         mspe = mean_squared_error(estimator.predict(self.X_test), self.y_test)
 
-        return mspe
+        return({
+                'mspe': mspe,  # loss on test dataset
+                })
 
     def run_LASSOCV(self, n_alphas=100):
         """
@@ -669,7 +696,11 @@ class RealBenchmark():
         mspe_lcv = mean_squared_error(
             model_lcv.predict(self.X_test), self.y_test)
 
-        return loss_lcv, mspe_lcv, elapsed
+        return({
+                'val_loss': loss_lcv,  # validation loss
+                'mspe': mspe_lcv, # loss on test dataset
+                'time': elapsed # Time elapsed wall-clock
+                })
 
     def run_sparseho(self, grad_solver='gd', algo_pick='imp_forw', n_steps=10, init_point=None):
         """
@@ -690,7 +721,7 @@ class RealBenchmark():
 
         Returns
         -------
-        Cross-validation loss, MSPE divided by oracle and time elapsed
+        Cross-validation loss, MSPE divided by oracle and time elapsed: list
         """
 
         if init_point is not None:
@@ -738,4 +769,8 @@ class RealBenchmark():
 
         self.reg_coef = reg_coef
 
-        return monitor.objs, mspe, monitor.times
+        return({
+                'val_loss': monitor.objs,  # validation loss
+                'mspe': mspe, # loss on test dataset
+                'time': monitor.times # Time elapsed wall-clock
+                })

@@ -4,6 +4,8 @@ LassoBench is a library for high-dimensional hyperparameter optimization benchma
 
 ## Install the development version
 
+Python version >= 3.8 required.
+
 From a console or terminal clone the repository and install LassoBench:
 
 ::
@@ -65,6 +67,14 @@ synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple', noise=True)
 d = synt_bench.n_features
 random_config = np.random.uniform(low=-1.0, high=1.0, size=(d,))
 loss = synt_bench.evaluate(random_config)
+```
+## Which hyperparameters are important in [synthetic](#list-of-synthetic-benchmarks) benchs?
+```python
+import numpy as np
+import LassoBench
+synt_bench = LassoBench.SyntheticBenchmark(pick_bench='synt_simple', noise=True)
+true_reg_coef = synt_bench.w_true
+hpo_important = np.argwhere(true_reg_coef != 0)
 ```
 ## [Real-world](#list-of-real-world-benchmarks) bench code
 ```python

@@ -90,7 +90,6 @@ def run_turbo_par(noise):
 
         X = turbo1.X # Evaluated points
         loss_turbo = turbo1.fX # Observed values
-        time_turbo = np.array(turbo1.time_ite) # time elapsed
 
         mspe_turbo = np.empty((n_steps,))
         fscore_turbo = np.empty((n_steps,))
@@ -99,7 +98,7 @@ def run_turbo_par(noise):
         for i in range(n_steps):
             mspe_turbo[i], fscore_turbo[i] = synt_bench.test(X[i, :])
 
-        return np.squeeze(loss_turbo), mspe_turbo, fscore_turbo, time_turbo
+        return np.squeeze(loss_turbo), mspe_turbo, fscore_turbo
 
     return run_turbo
 
@@ -111,21 +110,19 @@ def main_turbo(n_seed):
     loss_turbo = []
     mspe_turbo = []
     fscore_turbo = []
-    time_turbo = []
 
     for j in range(2):
 
         turbo_objective = run_turbo_par(noise=noise_pick[j])
         random_seeds = np.random.randint(200000000, size=n_repeat)
-        loss_turbo0, mspe_turbo0, fscore_turbo0, time_turbo0 = turbo_objective(random_seeds[n_seed])
+        loss_turbo0, mspe_turbo0, fscore_turbo0 = turbo_objective(random_seeds[n_seed])
 
         loss_turbo.append(loss_turbo0)
         mspe_turbo.append(mspe_turbo0)
         fscore_turbo.append(fscore_turbo0)
-        time_turbo.append(time_turbo0)
 
     with open('turbo_' + str(n_seed) + '.pkl', 'wb') as f:  # Python 3: open(..., 'wb')
-        pickle.dump([loss_turbo, mspe_turbo, fscore_turbo, time_turbo], f)
+        pickle.dump([loss_turbo, mspe_turbo, fscore_turbo], f)
         # pickle.dump([res_loss, res_mspe, res_fscore, res_time], f)
 
 if __name__=='__main__':
