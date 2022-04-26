@@ -45,7 +45,7 @@ class SyntheticBenchmark():
         increasing the noise level for the predefined bench
     mf_opt : str, optional
         name of a multi-fidelity framework
-        multi_continuous or multi_discrete
+        continuous_fidelity or discrete_fidelity
     n_features : int, optional
         number of features in design matrix i.e. the dimension of search space
     n_samples : int, optional
@@ -259,7 +259,8 @@ class SyntheticBenchmark():
         input_config : array size of n_features
         index_fidelity : int, optional
             If mf_opt is selected, then selecting which fidelity to evaluate. (default is None)
-            For multi_discrete, index_fidelity is a dicreate par between 0 and 5.
+            For continuous_fidelity, index_fidelity is defined within [0,1]
+            For discrete_fidelity, index_fidelity is a dicreate par between 0 and 5.
 
         Returns
         -------
@@ -603,7 +604,8 @@ class RealBenchmark():
         input_config : array size of n_features
         index_fidelity : int, optional
             If mf_opt is selected, then selecting which fidelity to evaluate. (default is None)
-            For multi_discrete, index_fidelity is a dicreate par between 0 and 5.
+            For continuous_fidelity, index_fidelity is defined within [0,1]
+            For discrete_fidelity, index_fidelity is a dicreate par between 0 and 5.
 
         Returns
         -------
