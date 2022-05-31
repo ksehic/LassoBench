@@ -452,7 +452,7 @@ class RealBenchmark():
     ----------
     pick_data : str
         name of dataset such as
-        diabetes, breast_cancer, leukemia, rcv1, news20
+        Diabetes, Breast_cancer, Leukemia, RCV1
     mf_opt : str, optional
         name of a multi-fidelity framework
         continuous_fidelity or discrete_fidelity
@@ -534,7 +534,7 @@ class RealBenchmark():
 
         # split train and test
         self.n_splits = n_splits
-        if pick_data != 'leukemia':
+        if pick_data.lower() != 'leukemia':
             self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
                 X, y, test_size=test_size, random_state=seed)
 
