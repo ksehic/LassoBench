@@ -434,6 +434,7 @@ class SyntheticBenchmark():
             fscore[i] = f1_score(self.coef_true_support, coef_sho_support)
 
         self.reg_coef = reg_coef
+        self.config_all = config_all
 
         return({
                 'val_loss': monitor.objs/self.loss_oracle,  # scaled validation loss
@@ -770,6 +771,7 @@ class RealBenchmark():
             reg_coef[i, :] = estimator.coef_
 
         self.reg_coef = reg_coef
+        self.config_all = config_all
 
         return({
                 'val_loss': monitor.objs,  # validation loss
