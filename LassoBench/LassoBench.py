@@ -514,7 +514,11 @@ class RealBenchmark():
             self.X_test, self.y_test = fetch_libsvm('leukemia_test')
             alpha_scale = 1e5
         elif pick_data.lower() == 'rcv1':
-            X, y = fetch_libsvm('rcv1.binary')
+            # Use min_nnz=3 to discard features with fewer than 3 non-zero
+            # entries, yielding n=20,242 samples and p=19,959 features
+            # as in Bertrand et al. "Implicit differentiation of Lasso-type
+            # models for hyperparameter optimization"
+            X, y = fetch_libsvm('rcv1.binary', min_nnz=3)
             alpha_scale = 1e3
         elif pick_data.lower() == 'dna':
             X, y = fetch_libsvm('dna')
